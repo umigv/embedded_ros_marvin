@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
-import os  # Ensure os module is imported
-from glob import glob  # Ensure glob module is imported
+import os
+from glob import glob
 
 package_name = 'Embedded_ROS_Marvin'
 
@@ -13,6 +13,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
+        (os.path.join('share', package_name, 'params'), glob('params/*.yaml')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
