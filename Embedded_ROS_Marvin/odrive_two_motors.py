@@ -24,7 +24,7 @@ class DualODriveController(Node):
         self.calibrate_motor()
 
         self.subscription = self.create_subscription(
-            Twist,'merge_vel',self.cmd_vel_callback,10)
+            Twist,'cmd_vel_joy',self.cmd_vel_callback,10)
 
         self.publisher = self.create_publisher(Twist, 'enc_vel', 10)
 
