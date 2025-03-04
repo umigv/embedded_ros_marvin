@@ -9,6 +9,8 @@
         "/home/ericb/ros2_ws/install/turtlebot3_gazebo/include/**",
         "/home/ericb/ros2_ws/install/my_robot_interfaces/include/**",
         "/opt/ros/humble/include/**",
+        "/home/ericb/ros2_ws/src/my_cpp_pkg/include/**",
+        "/home/ericb/ros2_ws/src/turtlebot3_gazebo/include/**",
         "/usr/include/**"
       ],
       "name": "ROS",

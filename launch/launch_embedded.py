@@ -8,20 +8,20 @@ def generate_launch_description():
     use_enc_odom_arg = launch.substitutions.LaunchConfiguration('use_enc_odom')
 
     led_node = launch_ros.actions.Node(
-        package='arv_embedded', 
+        package='embedded_ros_marvin', 
         executable='LED_subscriber',
         output='screen',
         condition=launch.conditions.IfCondition(use_LED_arg)
     )
 
     dual_odrive_controller_node = launch_ros.actions.Node(
-        package='arv_embedded', 
+        package='embedded_ros_marvin', 
         executable='dual_odrive_controller',
         output='screen'
     )
 
     enc_odom_publisher_node = launch_ros.actions.Node(
-        package='arv_embedded', 
+        package='embedded_ros_marvin', 
         executable='enc_odom_publisher',
         output='screen',
         condition=launch.conditions.IfCondition(use_enc_odom_arg)

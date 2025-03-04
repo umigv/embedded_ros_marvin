@@ -1,4 +1,4 @@
-# Embedded_ROS_Marvin
+# embedded_ros_marvin
 
 ## Setup for Indicator LED
 

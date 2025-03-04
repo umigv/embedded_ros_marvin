@@ -4,7 +4,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     # Get path to the source package
-    package_src_dir = os.path.join(os.path.expanduser("~"), "ros2_ws/src/Embedded_ROS_Marvin")
+    package_src_dir = os.path.join(os.path.expanduser("~"), "ros2_ws/src/embedded_ros_marvin")
 
     # Path to the parameter file in the source folder
     ekf_params_file = os.path.join(package_src_dir, "params", "arv_ekf.yaml")

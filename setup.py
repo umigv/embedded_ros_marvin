@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 import os
 from glob import glob
 
-package_name = 'Embedded_ROS_Marvin'
+package_name = 'embedded_ros_marvin'
 
 setup(
     name=package_name,
@@ -24,10 +24,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "odrive_controller = arv_embedded.odrive_sub_pub:main",
-            "dual_odrive_controller = arv_embedded.odrive_two_motors:main",
-            "LED_subscriber = arv_embedded.led_subscriber:main",
-            "enc_odom_publisher = arv_embedded.enc_odom_publisher:main"
+            "odrive_controller = embedded_ros_marvin.odrive_sub_pub:main",
+            "dual_odrive_controller = embedded_ros_marvin.odrive_two_motors:main",
+            "LED_subscriber = embedded_ros_marvin.led_subscriber:main",
+            "enc_odom_publisher = embedded_ros_marvin.enc_odom_publisher:main"
         ],
     },
 )
