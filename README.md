@@ -2,9 +2,9 @@
 Setup for indicator LED
 
 1. Run this in terminal: 
-    sudo nano /etc/udev/rules.d/99-arduino.rules
+        sudo nano /etc/udev/rules.d/99-arduino.rules
 2. In the file that opens, add: 
-    SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0042", ATTRS{serial}=="557363130383514121D2", SYMLINK+="LED_Arduino", MODE="0666"
+        SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0042", ATTRS{serial}=="557363130383514121D2", SYMLINK+="LED_Arduino", MODE="0666"
 3. Reboot system
 
 Note:
