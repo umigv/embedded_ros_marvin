@@ -5,9 +5,8 @@ import launch.actions
 def generate_launch_description():
     # Declare launch arguments
     use_LED_arg = launch.substitutions.LaunchConfiguration('use_LED')
-    use_enc_tf_arg = launch.substitutions.LaunchConfiguration('use_enc_tf')
+    use_enc_odom_arg = launch.substitutions.LaunchConfiguration('use_enc_odom')
 
-    # Define the LED node (only launched if use_LED is true)
     led_node = launch_ros.actions.Node(
         package='arv_embedded', 
         executable='LED_subscriber',
@@ -15,7 +14,6 @@ def generate_launch_description():
         condition=launch.conditions.IfCondition(use_LED_arg)
     )
 
-    # These nodes always launch
     dual_odrive_controller_node = launch_ros.actions.Node(
         package='arv_embedded', 
         executable='dual_odrive_controller',
@@ -26,12 +24,12 @@ def generate_launch_description():
         package='arv_embedded', 
         executable='enc_odom_publisher',
         output='screen',
-        parameters=[{'use_enc_tf': use_enc_tf_arg}]
+        condition=launch.conditions.IfCondition(use_enc_odom_arg)
     )
 
     return launch.LaunchDescription([
-        launch.actions.DeclareLaunchArgument('use_LED', default_value='false', description="Enable LED node"),
-        launch.actions.DeclareLaunchArgument('use_enc_tf', default_value='false', description="Enable TF publishing using encoder odometry"),
+        launch.actions.DeclareLaunchArgument('use_LED', default_value='true', description="Enable LED node"),
+        launch.actions.DeclareLaunchArgument('use_enc_odom', default_value='false', description="Enable encoder odometry and TF"),
         dual_odrive_controller_node,
         enc_odom_publisher_node,
         led_node
