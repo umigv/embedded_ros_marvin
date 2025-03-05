@@ -21,10 +21,16 @@ SAMPLE_TIME = 0.1  # Time interval for updates (seconds)
 # Compute Covariance
 circumference = WHEEL_DIAMETER * PI  # meters
 distance_per_count = circumference / ENCODER_COUNTS_PER_REV  # meters per count
-vel_std_dev = distance_per_count / SAMPLE_TIME  # m/s uncertainty
-vel_variance = vel_std_dev ** 2  # variance for linear velocity
-ang_std_dev = vel_std_dev / (WHEEL_BASE / 2.0)  # Angular velocity uncertainty
-ang_variance = ang_std_dev ** 2  # variance for angular velocity
+
+'''m/s uncertainty for each wheel (assuming no correlation between two wheels,
+also assuming encoder deviation of 1 count)'''
+vel_std_dev = distance_per_count / SAMPLE_TIME  
+
+'''Variance for linear velocity. For v_x = (v_r + v_l)/2, variance is wheel_variance/2'''
+vel_variance = 0.5 * (vel_std_dev ** 2)
+
+'''Variance for angular velocity. For w_z = (v_r - v_l)/L, variance is 2*wheel_variance/L^2'''
+ang_variance = 2 * (vel_std_dev ** 2) / (WHEEL_BASE ** 2)
 
 # Covariance Matrix
 COVARIANCE_MATRIX = [0.0] * 36
