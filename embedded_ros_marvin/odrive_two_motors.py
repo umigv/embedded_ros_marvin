@@ -9,7 +9,7 @@ from odrive.enums import (
 
 # Robot Parameters
 WHEEL_BASE = 0.77  # Distance between wheels (meters)
-WHEEL_DIAMETER = 0.312928  # Wheel diameter (meters)
+WHEEL_DIAMETER = 0.312  # Wheel diameter (meters)
 PI = 3.14159265359
 VEL_TO_RPS = 1.0 / (WHEEL_DIAMETER * PI) * 98.0 / 3.0
 LEFT_POLARITY = 1
@@ -48,7 +48,7 @@ class DualODriveController(Node):
         self.motor_setup()
 
         self.subscription = self.create_subscription(
-            Twist, 'cmd_vel_joy', self.cmd_vel_callback, 10)
+            Twist, 'joy_cmd_vel', self.cmd_vel_callback, 10)
 
         # Publisher for encoder velocities with covariance
         self.publisher = self.create_publisher(TwistWithCovarianceStamped, 'enc_vel', 10)
