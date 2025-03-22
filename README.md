@@ -68,3 +68,5 @@ SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0042", ATTRS{seria
   ```bash
   udevadm info -a -n /dev/ttyACM0 | grep 'ATTRS{serial}'
   ```
+### Router password:
+Password: 64182087
