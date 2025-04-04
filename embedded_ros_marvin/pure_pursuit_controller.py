@@ -16,7 +16,7 @@ class PurePursuitNode(Node):
         # Parameters
         self.max_linear_speed = 0.3
         self.max_angular_speed = 0.7
-        self.goal_tolerance = 0.1
+        self.goal_tolerance = 0.5
 
         # State
         self.goal = None
@@ -67,8 +67,8 @@ class PurePursuitNode(Node):
         local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
         local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
 
-        # Prevent division by zero
-        if local_x <= 0.001:
+        # Prevent division by zero, driving backwards or rapid turning (maybe change to 0.1?)
+        if local_x <= 0.01:
             return
 
         # Compute curvature and steering
