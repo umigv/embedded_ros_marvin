@@ -67,8 +67,8 @@ class PurePursuitNode(Node):
         local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
         local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
 
-        # Prevent division by zero
-        if local_x <= 0.001:
+        # Prevent division by zero, driving backwards or rapid turning (maybe change to 0.1?)
+        if local_x <= 0.01:
             return
 
         # Compute curvature and steering
