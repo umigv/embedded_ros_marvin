@@ -16,14 +16,14 @@ class PurePursuitNode(Node):
         # Parameters
         self.max_linear_speed = 0.3
         self.max_angular_speed = 0.7
-        self.goal_tolerance = 0.1
+        self.goal_tolerance = 0.5
 
         # State
         self.goal = None
         self.pose = None
 
         # Subscribers
-        self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+        self.create_subscription(Odometry, '/zed/zed_node/odom', self.odom_callback, 10)
         self.create_subscription(PoseStamped, '/goal_pose', self.goal_callback, 10)
 
         # Publisher
