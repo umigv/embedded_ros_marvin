@@ -10,22 +10,19 @@ class PurePursuitNode(Node):
         super().__init__('pure_pursuit_lookahead')
 
         # Parameters
-        self.max_linear_speed = 0.3
-        self.max_angular_speed = 0.7
-        self.lookahead_distance = 0.25
+        self.max_linear_speed = 0.4
+        self.max_angular_speed = 0.4
+        self.lookahead_distance = 0.3
 
         # State
         self.path = []
         self.pose = None
 
-        # Subscribers
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
         self.create_subscription(Path, '/path', self.path_callback, 10)
 
-        # Publisher
         self.cmd_pub = self.create_publisher(Twist, '/joy_cmd_vel', 10)
 
-        # Timer
         self.create_timer(0.1, self.control_loop)
 
     def path_callback(self, msg):
@@ -57,6 +54,7 @@ class PurePursuitNode(Node):
             local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
             dist = math.hypot(local_x, local_y)
 
+            # Prevents driving backwards or directly to the side
             if local_x > 0.05 and dist >= self.lookahead_distance:
                 return local_x, local_y
 
