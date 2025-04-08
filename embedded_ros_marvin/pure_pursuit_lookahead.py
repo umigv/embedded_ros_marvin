@@ -1,14 +1,16 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry, Path
+from rclpy.action import ActionServer
+from geometry_msgs.msg import Twist, Point
+from nav_msgs.msg import Odometry
+from infra_interfaces.action import FollowPath  # Import the action
 import math
 
 
 class PurePursuitNode(Node):
     def __init__(self):
         super().__init__('pure_pursuit_lookahead')
-
+        self.get_logger().info('Pure Pursuit Node started.')
         # Parameters
         self.max_linear_speed = 0.4
         self.max_angular_speed = 0.4
@@ -17,16 +19,30 @@ class PurePursuitNode(Node):
         # State
         self.path = []
         self.pose = None
-
+        self.reached_goal = False
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
-        self.create_subscription(Path, '/path', self.path_callback, 10)
 
-        self.cmd_pub = self.create_publisher(Twist, '/joy_cmd_vel', 10)
+        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+
+        self.action_server = ActionServer(
+            self,
+            FollowPath,
+            'follow_path',
+            execute_callback=self.execute_callback
+        )  # Action server
 
         self.create_timer(0.1, self.control_loop)
 
-    def path_callback(self, msg):
-        self.path = [(p.pose.position.x, p.pose.position.y) for p in msg.poses]
+    def execute_callback(self, goal_handle):
+        self.get_logger().info('Received a new path from action client.')
+        self.path = [(p.x, p.y) for p in goal_handle.request.path]  # Update path
+        while not self.reached_goal:
+            rclpy.spin_once(self)
+            if self.reached_goal:
+                break
+        goal_handle.succeed()
+        result = FollowPath.Result()
+        return result
 
     def odom_callback(self, msg):
         pos = msg.pose.pose.position
@@ -58,9 +74,11 @@ class PurePursuitNode(Node):
             if local_x > 0.05 and dist >= self.lookahead_distance:
                 return local_x, local_y
 
+        self.reached_goal = True
         return None
 
     def control_loop(self):
+        self.get_logger().info('Control loop running.')
         if self.pose is None:
             return
 
@@ -68,7 +86,10 @@ class PurePursuitNode(Node):
 
         if local_point is None:
             self.cmd_pub.publish(Twist())  # Stop
-            self.get_logger().info('Path completed.')
+            if  self.reached_goal:
+                self.get_logger().info('Path completed.')
+            else:
+                self.get_logger().info('Waiting for vaild lookahead point.')
             return
 
         local_x, local_y = local_point
