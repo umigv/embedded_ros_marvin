@@ -22,7 +22,7 @@ class PurePursuitNode(Node):
         self.reached_goal = False
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
 
-        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.cmd_pub = self.create_publisher(Twist, '/joy_cmd_vel', 10)
 
         self.action_server = ActionServer(
             self,
