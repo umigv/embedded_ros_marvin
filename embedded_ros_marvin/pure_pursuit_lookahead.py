@@ -57,8 +57,6 @@ class PurePursuitNode(Node):
         while not self.reached_goal and rclpy.ok():
             time.sleep(0.05)
 
-        self.reached_goal = False
-        self.visited = -1
         self.path = []
         goal_handle.succeed()
         result = FollowPath.Result()
