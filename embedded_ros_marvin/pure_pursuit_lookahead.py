@@ -52,14 +52,14 @@ class PurePursuitNode(Node):
         self.get_logger().info('Received a new path from action client.')
         self.path = [(p.x, p.y) for p in goal_handle.request.path]
         self.reached_goal = False
-
+        self.visited = -1
+        
         while not self.reached_goal and rclpy.ok():
             time.sleep(0.05)
 
         self.reached_goal = False
         self.visited = -1
         self.path = []
-
         goal_handle.succeed()
         result = FollowPath.Result()
         return result
