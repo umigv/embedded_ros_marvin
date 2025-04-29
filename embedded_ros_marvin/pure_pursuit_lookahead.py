@@ -58,7 +58,7 @@ class PurePursuitNode(Node):
         # Parameters
         self.max_linear_speed = 0.4
         self.max_angular_speed = 0.4
-        self.lookahead_distance = 0.25
+        self.lookahead_distance = 0.15
         self.visted = -1 # last node in the path that was visited
         # State
         self.path = []
@@ -125,6 +125,18 @@ class PurePursuitNode(Node):
 
         x, y, yaw = self.pose
 
+        # Check if the goal is reached
+        goal_x, goal_y = self.path[-1]
+        goal_dx = goal_x - x
+        goal_dy = goal_y - y
+        goal_dist = math.hypot(goal_dx, goal_dy)
+        if goal_dist < self.lookahead_distance:
+            self.get_logger().info('REACHED GOAL')
+            self.reached_goal = True
+            return None
+        
+        # Iterate through the path to find the lookahead point
+
         for i, a in  enumerate(self.path):
             if i <= self.visted:
                 continue   
@@ -132,21 +144,16 @@ class PurePursuitNode(Node):
             gx, gy = a
             dx = gx - x
             dy = gy - y
-            self.visted = i
             # Transform to robot's frame
             local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
             local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
             dist = math.hypot(local_x, local_y)
 
             if local_x > 0.0 and dist >= self.lookahead_distance:
-                
-                if(i == len(self.path) -2):
-                    self.get_logger().info('REACHED GOAL')
-                    self.reached_goal = True    
-
-                    break;
+                self.visted = i
                 return local_x, local_y
-
+            
+        self.get_logger().info('AHHHHHHHH')
         return None
 
     def control_loop(self):
