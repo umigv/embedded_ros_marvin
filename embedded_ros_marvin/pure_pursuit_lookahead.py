@@ -79,12 +79,13 @@ class PurePursuitNode(Node):
             return None
 
         x, y, yaw = self.pose
-
         # Check if the goal is reached
         goal_x, goal_y = self.path[-1]
         goal_dx = goal_x - x
         goal_dy = goal_y - y
         goal_dist = math.hypot(goal_dx, goal_dy)
+        self.get_logger().info('goal distance' + goal_dist)
+        
         if goal_dist < self.goal_tolerance:
             self.get_logger().info('REACHED GOAL')
             self.reached_goal = True
@@ -107,6 +108,7 @@ class PurePursuitNode(Node):
                 self.visited = i
                 return local_x, local_y
 
+        self.get_logger().info('visited index' + self.visited)
         self.get_logger().info('AHHHHHHHH (cannot find lookahead point)')
         return None
 
