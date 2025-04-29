@@ -92,24 +92,24 @@ class PurePursuitNode(Node):
             return None
 
         # Search for lookahead point
-        for i, (gx, gy) in enumerate(self.path):
-            if i <= self.visited:
-                continue
-
+        # Start at visited index, allows the last point to be chosen again
+        for i in range(self.visited, len(self.path)):
+            gx, gy = self.path[i]
             dx = gx - x
             dy = gy - y
-
+        
             # Transform to robot frame
             local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
             local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
             dist = math.hypot(local_x, local_y)
-
+        
             if local_x > 0.0 and dist >= self.lookahead_distance:
-                self.visited = i
+                self.visited = i  # can stay the same if same point is chosen again
                 return local_x, local_y
 
+
         self.get_logger().info(f'Visited index: {self.visited}')
-        self.get_logger().info('AHHHHHHHH (cannot find lookahead point)')
+        self.get_logger().info('Cannot find lookahead point')
         return None
 
     def control_loop(self):
