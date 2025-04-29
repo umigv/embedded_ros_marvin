@@ -84,7 +84,7 @@ class PurePursuitNode(Node):
         goal_dx = goal_x - x
         goal_dy = goal_y - y
         goal_dist = math.hypot(goal_dx, goal_dy)
-        self.get_logger().info('goal distance' + goal_dist)
+        self.get_logger().info(f'Distance to final goal: {goal_dist:.3f} m')
         
         if goal_dist < self.goal_tolerance:
             self.get_logger().info('REACHED GOAL')
@@ -108,7 +108,7 @@ class PurePursuitNode(Node):
                 self.visited = i
                 return local_x, local_y
 
-        self.get_logger().info('visited index' + self.visited)
+        self.get_logger().info(f'Visited index: {self.visited}')
         self.get_logger().info('AHHHHHHHH (cannot find lookahead point)')
         return None
 
