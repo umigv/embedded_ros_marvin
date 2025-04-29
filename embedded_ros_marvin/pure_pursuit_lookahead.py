@@ -59,6 +59,7 @@ class PurePursuitNode(Node):
         self.max_linear_speed = 0.4
         self.max_angular_speed = 0.4
         self.lookahead_distance = 0.15
+        self.goal_tolerance = 2
         self.visted = -1 # last node in the path that was visited
         # State
         self.path = []
@@ -130,7 +131,7 @@ class PurePursuitNode(Node):
         goal_dx = goal_x - x
         goal_dy = goal_y - y
         goal_dist = math.hypot(goal_dx, goal_dy)
-        if goal_dist < self.lookahead_distance:
+        if goal_dist < self.goal_tolerance:
             self.get_logger().info('REACHED GOAL')
             self.reached_goal = True
             return None
