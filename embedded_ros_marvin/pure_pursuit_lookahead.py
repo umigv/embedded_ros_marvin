@@ -19,8 +19,8 @@ class PurePursuitNode(Node):
         # Parameters
         self.max_linear_speed = 0.4
         self.max_angular_speed = 0.4
-        self.lookahead_distance = 0.15
-        self.goal_tolerance = 0.2
+        self.lookahead_distance = 0.25
+        self.goal_tolerance = 0.3
         self.visited = -1  # last node visited
 
         # State
