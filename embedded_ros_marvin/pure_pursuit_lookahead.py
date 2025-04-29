@@ -4,54 +4,15 @@ from rclpy.action import ActionServer
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
 
-from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
-from infra_interfaces.action import FollowPath  # Import the action
+from geometry_msgs.msg import Twist, PoseStamped
+from nav_msgs.msg import Odometry, Path
+from infra_interfaces.action import FollowPath  # Custom action
 import math
-import threading
 import time
 
 
-#debug imports
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped
-from nav_msgs.msg import Path
-
-# publish a path for rviz2 debugging
-
-class DebugPublisher(Node):
-    def __init__(self):
-        super().__init__('path_publisher')
-        self.publisher_ = self.create_publisher(Path, '/debug_path', 10)
-        timer_period = 1.0  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-
-        # Example path: list of (x, y) tuples
-        self.path_points = []
-
-    def timer_callback(self):
-        path_msg = Path()
-        path_msg.header.frame_id = "map"
-        path_msg.header.stamp = self.get_clock().now().to_msg()
-
-        for x, y in self.path_points:
-            pose = PoseStamped()
-            pose.header.frame_id = "map"
-            pose.header.stamp = self.get_clock().now().to_msg()
-            pose.pose.position.x = x
-            pose.pose.position.y = y
-            pose.pose.position.z = 0.0
-            pose.pose.orientation.w = 1.0  # identity quaternion
-            path_msg.poses.append(pose)
-
-        self.publisher_.publish(path_msg)
-        self.get_logger().info('Published path')
-
 class PurePursuitNode(Node):
     def __init__(self):
-        print("here")
-
         super().__init__('pure_pursuit_lookahead')
         self.get_logger().info('Pure Pursuit Node started.')
 
@@ -59,18 +20,23 @@ class PurePursuitNode(Node):
         self.max_linear_speed = 0.4
         self.max_angular_speed = 0.4
         self.lookahead_distance = 0.15
-        self.goal_tolerance = 2
-        self.visted = -1 # last node in the path that was visited
+        self.goal_tolerance = 2.0
+        self.visited = -1  # last node visited
+
         # State
         self.path = []
         self.pose = None
         self.reached_goal = False
 
-        # Use ReentrantCallbackGroup for concurrent execution
+        # Use ReentrantCallbackGroup for concurrency
         self.cb_group = ReentrantCallbackGroup()
 
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10, callback_group=self.cb_group)
         self.cmd_pub = self.create_publisher(Twist, '/joy_cmd_vel', 10)
+
+        # Path publisher for RViz debugging
+        self.path_pub = self.create_publisher(Path, '/debug_path', 10)
+        self.create_timer(1.0, self.publish_path, callback_group=self.cb_group)
 
         self.action_server = ActionServer(
             self,
@@ -86,23 +52,12 @@ class PurePursuitNode(Node):
         self.get_logger().info('Received a new path from action client.')
         self.path = [(p.x, p.y) for p in goal_handle.request.path]
         self.reached_goal = False
-        
-        #DEBUG 
 
-        # node = DebugPublisher()
-        # rclpy.spin_once(node, timeout_sec=1.0) 
-        # node.path_points = self.path
-   
-
-
-        # Wait for the goal to be reached in a non-blocking loop
         while not self.reached_goal and rclpy.ok():
-            print("looping")
             time.sleep(0.05)
 
         self.reached_goal = False
-        self.visted = -1 # last node in the path that was visited
-        # State
+        self.visited = -1
         self.path = []
 
         goal_handle.succeed()
@@ -122,6 +77,7 @@ class PurePursuitNode(Node):
 
     def find_lookahead_point(self):
         if self.pose is None or not self.path:
+            self.get_logger().info('Odom or Path not available')
             return None
 
         x, y, yaw = self.pose
@@ -135,44 +91,36 @@ class PurePursuitNode(Node):
             self.get_logger().info('REACHED GOAL')
             self.reached_goal = True
             return None
-        
-        # Iterate through the path to find the lookahead point
 
-        for i, a in  enumerate(self.path):
-            if i <= self.visted:
-                continue   
+        # Search for lookahead point
+        for i, (gx, gy) in enumerate(self.path):
+            if i <= self.visited:
+                continue
 
-            gx, gy = a
             dx = gx - x
             dy = gy - y
-            # Transform to robot's frame
+
+            # Transform to robot frame
             local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
             local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
             dist = math.hypot(local_x, local_y)
 
             if local_x > 0.0 and dist >= self.lookahead_distance:
-                self.visted = i
+                self.visited = i
                 return local_x, local_y
-            
-        self.get_logger().info('AHHHHHHHH')
+
+        self.get_logger().info('AHHHHHHHH (cannot find lookahead point)')
         return None
 
     def control_loop(self):
-        if self.pose is None:
-            return
-
         local_point = self.find_lookahead_point()
 
         if local_point is None:
             self.cmd_pub.publish(Twist())
-            if self.reached_goal:
-                self.get_logger().info('Path completed.')
-            else:
-                self.get_logger().info('Waiting for valid lookahead point.')
             return
 
         local_x, local_y = local_point
-        curvature = 2 * local_y / (local_x**2 + local_y**2)
+        curvature = 2 * local_y / (local_x ** 2 + local_y ** 2)
         dist = math.hypot(local_x, local_y)
 
         linear = min(self.max_linear_speed, dist)
@@ -183,12 +131,32 @@ class PurePursuitNode(Node):
         cmd.angular.z = angular
         self.cmd_pub.publish(cmd)
 
+    def publish_path(self):
+
+        if not self.path:
+            return
+
+        path_msg = Path()
+        now = self.get_clock().now().to_msg()
+        path_msg.header.stamp = now
+        path_msg.header.frame_id = "odom" #allows visualization in rviz
+
+        for x, y in self.path:
+            pose = PoseStamped()
+            pose.header.stamp = now
+            pose.header.frame_id = "odom"
+            pose.pose.position.x = x
+            pose.pose.position.y = y
+            pose.pose.orientation.w = 1.0
+            path_msg.poses.append(pose)
+
+        self.path_pub.publish(path_msg)
+
 
 def main(args=None):
     rclpy.init(args=args)
     node = PurePursuitNode()
 
-    # MultiThreadedExecutor allows concurrent execution of callbacks
     executor = MultiThreadedExecutor()
     executor.add_node(node)
     executor.spin()
