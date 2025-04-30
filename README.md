@@ -1,5 +1,28 @@
 # embedded_ros_marvin
 
+## Key project Structrure
+```
+├── embedded_ros_marvin/              # Source folder containing ROS 2 node implementations
+│   ├── odrive_two_motors.py          # Subscribe to /joy_cmd_vel, controll the odrives and publish /enc_vel
+│   └── enc_odom_publisher.py         # Subscribe to /enc_vel and publish /odom
+│   └── led_subscriber.py             # Subscribe to /is_auto and controlls safety light LED
+│   └── pure_pursuit_lookahead.py     # Action server for follow_path, subscribe to /odom and publish /joy_cmd_vel
+├── launch/                           
+│   ├── launch_embedded.py            # Launches embedded nodes
+│   └── launch_ekf.py                 # Launches the EKF node for sensor fusion
+├── params/                           
+│   └── arv_ekf.yaml                  # Parameters for the EKF node
+├── sdr_estop/                        
+│   ├── estopnew.grc                  # GNU radio flowgraph
+│   └── estop.py                      # Auto generated python code from flowgraph
+│   └── estop_epy_block_3.py          # Embedded python block for integer toggle
+```
+
+
+
+
+## **To run the robot for 2025 competition**
+
 ## **Launch Files**
 
 ### **1. Launch Embedded Nodes**
