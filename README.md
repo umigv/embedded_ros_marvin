@@ -3,9 +3,9 @@
 ## Key project Structrure
 ```
 ├── embedded_ros_marvin/              # Source folder containing ROS 2 node implementations
-│   ├── odrive_two_motors.py          # Subscribe to /joy_cmd_vel, controll the odrives and publish /enc_vel
+│   ├── odrive_two_motors.py          # Subscribe to /joy_cmd_vel, control the odrives and publish /enc_vel
 │   └── enc_odom_publisher.py         # Subscribe to /enc_vel and publish /odom
-│   └── led_subscriber.py             # Subscribe to /is_auto and controlls safety light LED
+│   └── led_subscriber.py             # Subscribe to /is_auto and control safety light LED
 │   └── pure_pursuit_lookahead.py     # Action server for follow_path, subscribe to /odom and publish /joy_cmd_vel
 ├── launch/                           
 │   ├── launch_embedded.py            # Launches embedded nodes
