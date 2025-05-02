@@ -21,7 +21,7 @@ class PurePursuitNode(Node):
         self.max_angular_speed = 0.4
         self.lookahead_distance = 0.25
         self.goal_tolerance = 0.3
-        self.visited = -1  # last node visited
+        self.visited = 0  # last node visited
 
         # State
         self.path = []
@@ -52,7 +52,7 @@ class PurePursuitNode(Node):
         self.get_logger().info('Received a new path from action client.')
         self.path = [(p.x, p.y) for p in goal_handle.request.path]
         self.reached_goal = False
-        self.visited = -1
+        self.visited = 0
         
         while not self.reached_goal and rclpy.ok():
             time.sleep(0.05)
