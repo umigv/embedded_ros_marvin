@@ -162,7 +162,10 @@ class PurePursuitNode(Node):
                     if local_x > 0:
                         self.visited = i
                         return local_x, local_y
-    
+                        
+            if math.hypot(robot_x - x2, robot_y - y2) < self.lookahead_distance / 2:
+            self.visited = i + 1          # start with the next segment next time
+
         # If no point found
         self.get_logger().info('Cannot find interpolated lookahead point')
         return None
