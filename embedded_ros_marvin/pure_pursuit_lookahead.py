@@ -74,44 +74,100 @@ class PurePursuitNode(Node):
         return math.atan2(siny_cosp, cosy_cosp)
 
     def find_lookahead_point(self):
-        if self.pose is None or not self.path:
+        if self.pose is None or not self.path or len(self.path) < 2:
             self.get_logger().info('Odom or Path not available')
             return None
-
-        x, y, yaw = self.pose
-        # Check if the goal is reached
+    
+        # Robot's current pose and heading
+        robot_x, robot_y, robot_yaw = self.pose
+    
         goal_x, goal_y = self.path[-1]
-        goal_dx = goal_x - x
-        goal_dy = goal_y - y
-        goal_dist = math.hypot(goal_dx, goal_dy)
-        self.get_logger().info(f'Distance to final goal: {goal_dist:.3f} m')
-        
-        if goal_dist < self.goal_tolerance:
+        goal_distance = math.hypot(goal_x - robot_x, goal_y - robot_y)
+        if goal_distance < self.goal_tolerance:
             self.get_logger().info('REACHED GOAL')
             self.reached_goal = True
             return None
-
-        # Search for lookahead point
-        # Start at visited index, allows the last point to be chosen again
-        for i in range(self.visited, len(self.path)):
-            gx, gy = self.path[i]
-            dx = gx - x
-            dy = gy - y
-        
-            # Transform to robot frame
-            local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
-            local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
-            dist = math.hypot(local_x, local_y)
-        
-            if local_x > 0.0 and dist >= self.lookahead_distance:
-                self.visited = i  # can stay the same if same point is chosen again
-                return local_x, local_y
-
-
-        self.get_logger().info(f'Visited index: {self.visited}')
-        self.get_logger().info('Cannot find lookahead point')
+    
+        # Look through each path segment starting from last visited
+        for i in range(self.visited, len(self.path) - 1):
+            # Get start and end of segment
+            x1, y1 = self.path[i]
+            x2, y2 = self.path[i + 1]
+    
+            # Define difference in x and y from start to end of segment
+            seg_dx = x2 - x1
+            seg_dy = y2 - y1
+    
+            """
+            We want to find a point along the segment from (x1, y1) to (x2, y2) that is
+            lookahead_distance away from the robot's current pose (robot_x, robot_y).
+    
+            Parametric point on the segment:
+                x(t) = x1 + t * seg_dx
+                y(t) = y1 + t * seg_dy
+                with t in [0, 1]
+    
+            The squared distance to the robot is:
+                (x(t) - robot_x)^2 + (y(t) - robot_y)^2 = L^2
+    
+            Substitute:
+                [(x1 - robot_x) + t * seg_dx]^2 + [(y1 - robot_y) + t * seg_dy]^2 = L^2
+            
+            Expand both square terms:
+                (x1 - robot_x)^2 + 2*t*(x1 - robot_x)*seg_dx + t^2*seg_dx^2
+              + (y1 - robot_y)^2 + 2*t*(y1 - robot_y)*seg_dy + t^2*seg_dy^2 = L^2
+            
+            Group like terms:
+                t^2 * (seg_dx^2 + seg_dy^2)
+              + t * 2 * [(x1 - robot_x)*seg_dx + (y1 - robot_y)*seg_dy]
+              + (x1 - robot_x)^2 + (y1 - robot_y)^2 - L^2 = 0
+            
+            This gives a standard quadratic equation of the form:
+                a * t^2 + b * t + c = 0
+    
+            Where:
+                a = seg_dx^2 + seg_dy^2
+                b = 2 * ((x1 - robot_x) * seg_dx + (y1 - robot_y) * seg_dy)
+                c = (x1 - robot_x)^2 + (y1 - robot_y)^2 - lookahead_distance^2
+            """
+    
+            a = seg_dx**2 + seg_dy**2
+            b = 2 * ((x1 - robot_x) * seg_dx + (y1 - robot_y) * seg_dy)
+            c = (x1 - robot_x)**2 + (y1 - robot_y)**2 - self.lookahead_distance**2
+    
+            discriminant = b**2 - 4 * a * c
+    
+            # No intersection between segment and lookahead circle, or seg_dx and seg_dy both = 0
+            if discriminant < 0 or a == 0:
+                continue
+    
+            # Compute possible t values where segment hits lookahead circle
+            sqrt_disc = math.sqrt(discriminant)
+            t_candidates = [(-b + sqrt_disc) / (2 * a), (-b - sqrt_disc) / (2 * a)]
+    
+            for t in t_candidates:
+                # Only consider t between 0 and 1 (i.e., within the segment)
+                if 0.0 <= t <= 1.0:
+                    # Interpolated global coordinates at distance = lookahead
+                    lookahead_x = x1 + t * seg_dx
+                    lookahead_y = y1 + t * seg_dy
+    
+                    # Transform to robot's local frame
+                    dx = lookahead_x - robot_x
+                    dy = lookahead_y - robot_y
+                    local_x = math.cos(-robot_yaw) * dx - math.sin(-robot_yaw) * dy
+                    local_y = math.sin(-robot_yaw) * dx + math.cos(-robot_yaw) * dy
+    
+                    # Make sure it's in front of the robot
+                    if local_x > 0:
+                        self.visited = i
+                        return local_x, local_y
+    
+        # If no point found
+        self.get_logger().info('Cannot find interpolated lookahead point')
         return None
 
+    
     def control_loop(self):
         local_point = self.find_lookahead_point()
 
