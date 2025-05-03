@@ -18,10 +18,10 @@ class PurePursuitNode(Node):
         self.get_logger().info('Pure Pursuit Node started.')
 
         # Parameters
-        self.max_linear_speed = 0.4
-        self.max_angular_speed = 0.4
-        self.base_lookahead = 0.15
-        self.k_speed = 0.5
+        self.max_linear_speed = 0.5
+        self.max_angular_speed = 0.5
+        self.base_lookahead = 0.1
+        self.k_speed = 0.55
         self.goal_tolerance = 0.3
         self.visited = 0
 
@@ -66,7 +66,7 @@ class PurePursuitNode(Node):
         goal_handle.succeed()
         return FollowPath.Result()
 
-    def smooth_path(self, path, window_size=3):
+    def smooth_path(self, path, window_size=5):
         if len(path) < window_size:
             return path
         smoothed = []
@@ -105,16 +105,16 @@ class PurePursuitNode(Node):
             self.reached_goal = True
             return None
 
-        adaptive_lookahead = self.base_lookahead + self.k_speed * self.current_speed
-        adaptive_lookahead = max(0.1, min(1.0, adaptive_lookahead))
-        self.lookahead_distance = adaptive_lookahead
+        self.lookahead_distance = max(0.1, min(1.0, self.base_lookahead + self.k_speed * self.current_speed))
+        r = self.lookahead_distance
 
+        # Try to find interpolated segment intersection
         for i in range(self.visited, len(self.path) - 1):
-            x1, y1 = self.path[i]
-            x2, y2 = self.path[i + 1]
+            gx1, gy1 = self.path[i]
+            gx2, gy2 = self.path[i + 1]
 
-            dx1, dy1 = x1 - x, y1 - y
-            dx2, dy2 = x2 - x, y2 - y
+            dx1, dy1 = gx1 - x, gy1 - y
+            dx2, dy2 = gx2 - x, gy2 - y
 
             lx1 = math.cos(-yaw) * dx1 - math.sin(-yaw) * dy1
             ly1 = math.sin(-yaw) * dx1 + math.cos(-yaw) * dy1
@@ -124,17 +124,36 @@ class PurePursuitNode(Node):
             d1 = math.hypot(lx1, ly1)
             d2 = math.hypot(lx2, ly2)
 
-            if lx2 < -0.1:
+            # Skip segment if it's completely behind
+            if lx1 < -0.05 and lx2 < -0.05:
+                self.visited = i + 1
                 continue
 
-            if d1 < self.lookahead_distance <= d2:
-                ratio = (self.lookahead_distance - d1) / (d2 - d1)
-                lx_interp = lx1 + ratio * (lx2 - lx1)
-                ly_interp = ly1 + ratio * (ly2 - ly1)
+            # If segment crosses the lookahead radius, do linear interpolation
+            if d1 < r <= d2 and lx2 > 0.0:
+                ratio = (r - d1) / (d2 - d1)
+                ratio = max(0.0, min(1.0, ratio))  # clamp for safety
+                lx = lx1 + ratio * (lx2 - lx1)
+                ly = ly1 + ratio * (ly2 - ly1)
                 self.visited = i
-                return lx_interp, ly_interp
+                return lx, ly
 
+        # Fallback: no intersection with lookahead circle, pick the first forward point outside lookahead distance
+        for j in range(self.visited, len(self.path)):
+            gx, gy = self.path[j]
+            dx, dy = gx - x, gy - y
+            lx = math.cos(-yaw) * dx - math.sin(-yaw) * dy
+            ly = math.sin(-yaw) * dx + math.cos(-yaw) * dy
+            d = math.hypot(lx, ly)
+            if lx > 0.0 and d >= r:
+                self.visited = j
+                self.get_logger().warn(f'Fallback: chasing ahead point at index {j}')
+                return lx, ly
+
+        # Nothing usable found
+        self.get_logger().warn('No valid lookahead point found – stopping')
         return None
+
 
     def control_loop(self):
         local_point = self.find_lookahead_point()
