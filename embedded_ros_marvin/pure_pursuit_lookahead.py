@@ -1,3 +1,17 @@
+import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionServer
+from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor
+
+from geometry_msgs.msg import Twist, PoseStamped
+from nav_msgs.msg import Odometry, Path
+from infra_interfaces.action import FollowPath
+
+import math
+import time
+
+
 class PurePursuitNode(Node):
     def __init__(self):
         super().__init__('pure_pursuit_lookahead')
@@ -6,14 +20,14 @@ class PurePursuitNode(Node):
         # Parameters
         self.max_linear_speed = 0.4
         self.max_angular_speed = 0.4
-        self.base_lookahead = 0.25
-        self.k_speed = 0.5  # scales with speed
-        self.k_curve = 0.3  # reduces with curvature
+        self.base_lookahead = 0.15
+        self.k_speed = 0.5
         self.goal_tolerance = 0.3
         self.visited = 0
 
         # State
         self.path = []
+        self.raw_path = []
         self.pose = None
         self.reached_goal = False
         self.current_speed = 0.0
@@ -22,7 +36,10 @@ class PurePursuitNode(Node):
         self.create_subscription(Odometry, '/odom', self.odom_callback, 10, callback_group=self.cb_group)
         self.cmd_pub = self.create_publisher(Twist, '/joy_cmd_vel', 10)
         self.path_pub = self.create_publisher(Path, '/debug_path', 10)
+        self.raw_path_pub = self.create_publisher(Path, '/debug_raw_path', 10)
+
         self.create_timer(1.0, self.publish_path, callback_group=self.cb_group)
+        self.create_timer(1.0, self.publish_raw_path, callback_group=self.cb_group)
 
         self.action_server = ActionServer(
             self,
@@ -36,20 +53,36 @@ class PurePursuitNode(Node):
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Received a new path from action client.')
-        self.path = [(p.x, p.y) for p in goal_handle.request.path]
+        raw_path = [(p.x, p.y) for p in goal_handle.request.path]
+        self.raw_path = raw_path
+        self.path = self.smooth_path(raw_path)
         self.reached_goal = False
         self.visited = 0
+
         while not self.reached_goal and rclpy.ok():
             time.sleep(0.05)
+
         self.path = []
         goal_handle.succeed()
         return FollowPath.Result()
+
+    def smooth_path(self, path, window_size=3):
+        if len(path) < window_size:
+            return path
+        smoothed = []
+        for i in range(len(path)):
+            x_vals = []
+            y_vals = []
+            for j in range(max(0, i - window_size), min(len(path), i + window_size + 1)):
+                x_vals.append(path[j][0])
+                y_vals.append(path[j][1])
+            smoothed.append((sum(x_vals) / len(x_vals), sum(y_vals) / len(y_vals)))
+        return smoothed
 
     def odom_callback(self, msg):
         pos = msg.pose.pose.position
         ori = msg.pose.pose.orientation
         self.pose = (pos.x, pos.y, self.get_yaw_from_quaternion(ori))
-
         vx = msg.twist.twist.linear.x
         vy = msg.twist.twist.linear.y
         self.current_speed = math.hypot(vx, vy)
@@ -59,28 +92,8 @@ class PurePursuitNode(Node):
         cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
         return math.atan2(siny_cosp, cosy_cosp)
 
-    def estimate_path_curvature(self, window=5):
-        if len(self.path) < window:
-            return 0.0
-        total_curvature = 0.0
-        count = 0
-        for i in range(max(self.visited, 1), min(len(self.path)-1, self.visited + window)):
-            x0, y0 = self.path[i - 1]
-            x1, y1 = self.path[i]
-            x2, y2 = self.path[i + 1]
-
-            dx1, dy1 = x1 - x0, y1 - y0
-            dx2, dy2 = x2 - x1, y2 - y1
-            angle1 = math.atan2(dy1, dx1)
-            angle2 = math.atan2(dy2, dx2)
-            dtheta = abs(angle2 - angle1)
-            total_curvature += dtheta
-            count += 1
-        return total_curvature / count if count else 0.0
-
     def find_lookahead_point(self):
         if self.pose is None or not self.path:
-            self.get_logger().info('Odom or Path not available')
             return None
 
         x, y, yaw = self.pose
@@ -92,24 +105,35 @@ class PurePursuitNode(Node):
             self.reached_goal = True
             return None
 
-        curvature = self.estimate_path_curvature()
-        adaptive_lookahead = self.base_lookahead + self.k_speed * self.current_speed - self.k_curve * curvature
-        adaptive_lookahead = max(0.1, min(1.5, adaptive_lookahead))  # clamp to avoid instability
+        adaptive_lookahead = self.base_lookahead + self.k_speed * self.current_speed
+        adaptive_lookahead = max(0.1, min(1.0, adaptive_lookahead))
         self.lookahead_distance = adaptive_lookahead
-        self.get_logger().info(f'Adaptive lookahead: {self.lookahead_distance:.2f} m (speed={self.current_speed:.2f}, curve={curvature:.2f})')
 
-        for i in range(self.visited, len(self.path)):
-            gx, gy = self.path[i]
-            dx = gx - x
-            dy = gy - y
-            local_x = math.cos(-yaw) * dx - math.sin(-yaw) * dy
-            local_y = math.sin(-yaw) * dx + math.cos(-yaw) * dy
-            dist = math.hypot(local_x, local_y)
-            if local_x > 0.0 and dist >= self.lookahead_distance:
+        for i in range(self.visited, len(self.path) - 1):
+            x1, y1 = self.path[i]
+            x2, y2 = self.path[i + 1]
+
+            dx1, dy1 = x1 - x, y1 - y
+            dx2, dy2 = x2 - x, y2 - y
+
+            lx1 = math.cos(-yaw) * dx1 - math.sin(-yaw) * dy1
+            ly1 = math.sin(-yaw) * dx1 + math.cos(-yaw) * dy1
+            lx2 = math.cos(-yaw) * dx2 - math.sin(-yaw) * dy2
+            ly2 = math.sin(-yaw) * dx2 + math.cos(-yaw) * dy2
+
+            d1 = math.hypot(lx1, ly1)
+            d2 = math.hypot(lx2, ly2)
+
+            if lx2 < -0.1:
+                continue
+
+            if d1 < self.lookahead_distance <= d2:
+                ratio = (self.lookahead_distance - d1) / (d2 - d1)
+                lx_interp = lx1 + ratio * (lx2 - lx1)
+                ly_interp = ly1 + ratio * (ly2 - ly1)
                 self.visited = i
-                return local_x, local_y
+                return lx_interp, ly_interp
 
-        self.get_logger().info('Cannot find lookahead point')
         return None
 
     def control_loop(self):
@@ -145,9 +169,26 @@ class PurePursuitNode(Node):
             pose.pose.position.y = y
             pose.pose.orientation.w = 1.0
             path_msg.poses.append(pose)
-            
         self.path_pub.publish(path_msg)
-        
+
+    def publish_raw_path(self):
+        if not self.raw_path:
+            return
+        path_msg = Path()
+        now = self.get_clock().now().to_msg()
+        path_msg.header.stamp = now
+        path_msg.header.frame_id = "odom"
+        for x, y in self.raw_path:
+            pose = PoseStamped()
+            pose.header.stamp = now
+            pose.header.frame_id = "odom"
+            pose.pose.position.x = x
+            pose.pose.position.y = y
+            pose.pose.orientation.w = 1.0
+            path_msg.poses.append(pose)
+        self.raw_path_pub.publish(path_msg)
+
+
 def main(args=None):
     rclpy.init(args=args)
     node = PurePursuitNode()
