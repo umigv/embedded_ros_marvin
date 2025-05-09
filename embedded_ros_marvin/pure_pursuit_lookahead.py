@@ -10,7 +10,8 @@ from infra_interfaces.action import FollowPath
 
 import math
 import time
-
+import numpy as np
+from scipy.interpolate import splprep, splev
 
 class PurePursuitNode(Node):
     def __init__(self):
@@ -18,12 +19,12 @@ class PurePursuitNode(Node):
         self.get_logger().info('Pure Pursuit Node started.')
 
         # Parameters
-        self.max_linear_speed = 0.5
-        self.max_angular_speed = 0.5
+        self.max_linear_speed = 0.6
+        self.max_angular_speed = 0.6
         self.base_lookahead = 0.1
         self.k_speed = 0.55
-        self.goal_tolerance = 0.3
         self.visited = 0
+        self.speed_factor = 1
 
         # State
         self.path = []
@@ -55,7 +56,7 @@ class PurePursuitNode(Node):
         self.get_logger().info('Received a new path from action client.')
         raw_path = [(p.x, p.y) for p in goal_handle.request.path]
         self.raw_path = raw_path
-        self.path = self.smooth_path(raw_path)
+        self.path = self.smooth_path_spline(raw_path)
         self.reached_goal = False
         self.visited = 0
 
@@ -65,19 +66,47 @@ class PurePursuitNode(Node):
         self.path = []
         goal_handle.succeed()
         return FollowPath.Result()
-
+    
+  
     def smooth_path(self, path, window_size=5):
         if len(path) < window_size:
             return path
-        smoothed = []
-        for i in range(len(path)):
-            x_vals = []
-            y_vals = []
-            for j in range(max(0, i - window_size), min(len(path), i + window_size + 1)):
-                x_vals.append(path[j][0])
-                y_vals.append(path[j][1])
-            smoothed.append((sum(x_vals) / len(x_vals), sum(y_vals) / len(y_vals)))
-        return smoothed
+
+        # Separate into x and y arrays
+        x = np.array([p[0] for p in path])
+        y = np.array([p[1] for p in path])
+
+        # Create a uniform kernel
+        kernel = np.ones(2 * window_size + 1)
+        kernel = kernel / kernel.sum()
+
+        # Pad the data at the edges using 'edge' padding (repeat edge values)
+        x_padded = np.pad(x, (window_size,), mode='edge')
+        y_padded = np.pad(y, (window_size,), mode='edge')
+
+        # Convolve to get smoothed values
+        x_smooth = np.convolve(x_padded, kernel, mode='valid')
+        y_smooth = np.convolve(y_padded, kernel, mode='valid')
+
+        return list(zip(x_smooth, y_smooth))
+    
+    def smooth_path_spline(self, path, smoothing=0.1):
+        if len(path) < 3:
+            return path
+
+        x = [p[0] for p in path]
+        y = [p[1] for p in path]
+
+        
+        # Fit spline with no periodicity, and smoothing factor `s`
+        tck, _ = splprep([x, y], s=smoothing, per=0)
+
+        # Interpolate with 3 times the number of points
+        num_points = 3 * len(path)
+        u_fine = np.linspace(0, 1, num_points)
+        x_smooth, y_smooth = splev(u_fine, tck)
+
+        return list(zip(x_smooth, y_smooth))
 
     def odom_callback(self, msg):
         pos = msg.pose.pose.position
@@ -100,16 +129,18 @@ class PurePursuitNode(Node):
         goal_x, goal_y = self.path[-1]
         goal_dist = math.hypot(goal_x - x, goal_y - y)
 
-        if goal_dist < self.goal_tolerance:
+        self.lookahead_distance = max(0.1, min(0.4, self.base_lookahead + self.k_speed * self.current_speed))
+        r = self.lookahead_distance
+
+        if goal_dist < r:
             self.get_logger().info('REACHED GOAL')
             self.reached_goal = True
             return None
 
-        self.lookahead_distance = max(0.1, min(1.0, self.base_lookahead + self.k_speed * self.current_speed))
-        r = self.lookahead_distance
 
         # Try to find interpolated segment intersection
-        for i in range(self.visited, len(self.path) - 1):
+        # Allows one index backwards due to adaptive lookahead
+        for i in range(max(0, self.visited - 1), len(self.path) - 1):
             gx1, gy1 = self.path[i]
             gx2, gy2 = self.path[i + 1]
 
@@ -145,7 +176,7 @@ class PurePursuitNode(Node):
             lx = math.cos(-yaw) * dx - math.sin(-yaw) * dy
             ly = math.sin(-yaw) * dx + math.cos(-yaw) * dy
             d = math.hypot(lx, ly)
-            if lx > 0.0 and d >= r:
+            if lx > -0.1 and d >= r:
                 self.visited = j
                 self.get_logger().warn(f'Fallback: chasing ahead point at index {j}')
                 return lx, ly
@@ -165,8 +196,8 @@ class PurePursuitNode(Node):
         curvature = 2 * local_y / (local_x ** 2 + local_y ** 2)
         dist = math.hypot(local_x, local_y)
 
-        linear = min(self.max_linear_speed, dist)
-        angular = max(-self.max_angular_speed, min(self.max_angular_speed, linear * curvature))
+        linear = self.speed_factor * min(self.max_linear_speed, dist)
+        angular = self.speed_factor * max(-self.max_angular_speed, min(self.max_angular_speed, linear * curvature))
 
         cmd = Twist()
         cmd.linear.x = linear
