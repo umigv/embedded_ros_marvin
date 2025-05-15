@@ -184,7 +184,40 @@ class PurePursuitNode(Node):
         # Nothing usable found
         self.get_logger().warn('No valid lookahead point found – stopping')
         return None
+'''
+    def control_loop(self):
+        local_point = self.find_lookahead_point()
+        if local_point is None:
+            self.cmd_pub.publish(Twist())
+            return
+    
+        local_x, local_y = local_point
+        curvature = 2 * local_y / (local_x ** 2 + local_y ** 2)
 
+        # Scale up linear
+        raw_linear = self.lookahead_distance * 1.5
+    
+        # More linear velocity on straights
+        if abs(curvature) < 0.2:
+            raw_linear *= 1.5
+    
+        raw_angular = raw_linear * curvature
+    
+        # Scale both linear and angular if angular exceeds limit
+        # This keeps the proportions of pure pursuit
+        if abs(raw_angular) > self.max_angular_speed:
+            scale = self.max_angular_speed / abs(raw_angular)
+            linear = raw_linear * scale
+            angular = raw_angular * scale
+        else:
+            linear = raw_linear
+            angular = raw_angular
+    
+        cmd = Twist()
+        cmd.linear.x = linear
+        cmd.angular.z = angular
+        self.cmd_pub.publish(cmd)
+'''
 
     def control_loop(self):
         local_point = self.find_lookahead_point()
