@@ -27,7 +27,9 @@ setup(
             "odrive_controller = embedded_ros_marvin.odrive_sub_pub:main",
             "dual_odrive_controller = embedded_ros_marvin.odrive_two_motors:main",
             "LED_subscriber = embedded_ros_marvin.led_subscriber:main",
-            "enc_odom_publisher = embedded_ros_marvin.enc_odom_publisher:main"
+            "enc_odom_publisher = embedded_ros_marvin.enc_odom_publisher:main",
+            "pure_pursuit_controller = embedded_ros_marvin.pure_pursuit_controller:main",
+            "pure_pursuit_lookahead = embedded_ros_marvin.pure_pursuit_lookahead:main"
         ],
     },
 )

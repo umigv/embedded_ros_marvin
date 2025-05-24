@@ -9,14 +9,14 @@ from odrive.enums import (
 
 # Robot Parameters
 WHEEL_BASE = 0.77  # Distance between wheels (meters)
-WHEEL_DIAMETER = 0.312  # Wheel diameter (meters)
+WHEEL_DIAMETER = 0.2032  # Wheel diameter (meters)
 PI = 3.14159265359
 VEL_TO_RPS = 1.0 / (WHEEL_DIAMETER * PI) * 98.0 / 3.0
 LEFT_POLARITY = 1
 RIGHT_POLARITY = -1
 ESTOP_FILE_PATH = "/tmp/estop_value.txt"
 ENCODER_COUNTS_PER_REV = 42  # Encoder resolution (counts per revolution)
-SAMPLE_TIME = 0.1  # Time interval for updates (seconds)
+SAMPLE_TIME = 0.02  # Time interval for updates (seconds)
 
 # Compute Covariance
 circumference = WHEEL_DIAMETER * PI  # meters
@@ -54,7 +54,7 @@ class DualODriveController(Node):
         self.publisher = self.create_publisher(TwistWithCovarianceStamped, 'enc_vel', 10)
 
         # Timer to periodically publish encoder velocity
-        self.timer = self.create_timer(0.1, self.publish_enc_vel)
+        self.timer = self.create_timer(SAMPLE_TIME, self.publish_enc_vel)
 
     def motor_setup(self):
         """ Set motors to closed-loop velocity control mode. """
