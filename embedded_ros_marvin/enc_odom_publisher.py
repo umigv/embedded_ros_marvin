@@ -4,6 +4,7 @@ from geometry_msgs.msg import TwistWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from tf2_ros import TransformBroadcaster
 from geometry_msgs.msg import TransformStamped
+from std_srvs.srv import Empty
 import math
 
 class EncOdomPublisher(Node):
@@ -31,6 +32,13 @@ class EncOdomPublisher(Node):
 
         # TF broadcaster
         self.tf_broadcaster = TransformBroadcaster(self)
+
+        # Service to clear odometry
+        self.clear_odom_srv = self.create_service(
+            Empty,
+            'clear_odom',
+            self.clear_odom_callback
+        )
 
     def enc_vel_callback(self, msg):
         """ Callback to process encoder velocity messages and update odometry. """
@@ -90,6 +98,14 @@ class EncOdomPublisher(Node):
 
         # Broadcast transform
         self.tf_broadcaster.sendTransform(t)
+
+    def clear_odom_callback(self, request, response):
+        self.get_logger().info('Clearing odometry')
+        self.x = 0.0
+        self.y = 0.0
+        self.theta = 0.0
+        self.prev_time = self.get_clock().now()
+        return response
 
 def main(args=None):
     rclpy.init(args=args)
