@@ -55,8 +55,10 @@ class PurePursuitNode(Node):
     def execute_callback(self, goal_handle):
         self.get_logger().info('Received a new path from action client.')
         raw_path = [(p.x, p.y) for p in goal_handle.request.path]
-        self.raw_path = raw_path
-        self.path = self.smooth_path_spline(raw_path)
+        pathsz = int(len(raw_path) * 0.55)
+        self.raw_path = raw_path[:pathsz]
+
+        self.path = self.smooth_path_spline(self.raw_path)
         self.reached_goal = False
         self.visited = 0
 
