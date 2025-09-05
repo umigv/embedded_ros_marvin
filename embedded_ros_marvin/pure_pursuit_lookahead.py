@@ -3,15 +3,15 @@ from rclpy.node import Node
 from rclpy.action import ActionServer
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
-
 from geometry_msgs.msg import Twist, PoseStamped
 from nav_msgs.msg import Odometry, Path
 from infra_interfaces.action import FollowPath
-
+import asyncio
 import math
 import time
 import numpy as np
 from scipy.interpolate import splprep, splev
+import threading
 
 class PurePursuitNode(Node):
     def __init__(self):
@@ -41,6 +41,7 @@ class PurePursuitNode(Node):
 
         self.create_timer(1.0, self.publish_path, callback_group=self.cb_group)
         self.create_timer(1.0, self.publish_raw_path, callback_group=self.cb_group)
+        print("HERE")
 
         self.action_server = ActionServer(
             self,
@@ -49,14 +50,44 @@ class PurePursuitNode(Node):
             execute_callback=self.execute_callback,
             callback_group=self.cb_group
         )
+        print("HERE")
 
-        self.create_timer(0.1, self.control_loop, callback_group=self.cb_group)
+        self.speed_percent = 2
+        self.exec_percent = 0.6
+        print("HERE")
+
+        # asyncio.create_task(self.update_vals())
+        print("HERE")
+
+        # self.create_timer(0.1, self.control_loop, callback_group=self.cb_group)
+        # print("HERE")
+
+        # threading.Thread(target=self.helper, daemon=True).start()
+        # print("HERE")
+
+    def helper(self):
+        asyncio.run(self.update_vals())
+
+    async def update_vals(self):
+        await asyncio.sleep(1)
+
+       
+        self.speed_percent = 2
+        self.exec_percent = 0.6
+        print("change vals to")
+        print(self.speed_percent)
+        print(self.exec_percent)
+
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Received a new path from action client.')
         raw_path = [(p.x, p.y) for p in goal_handle.request.path]
-        pathsz = int(len(raw_path) * 0.55)
+        for i in raw_path:
+            print(i)
+        pathsz = int(len(raw_path) * self.exec_percent)
         self.raw_path = raw_path[:pathsz]
+       
+
 
         self.path = self.smooth_path_spline(self.raw_path)
         self.reached_goal = False
@@ -198,7 +229,7 @@ class PurePursuitNode(Node):
         curvature = 2 * local_y / (local_x ** 2 + local_y ** 2)
 
         # Scale up linear
-        raw_linear = self.lookahead_distance * 1.5
+        raw_linear = self.lookahead_distance * self.speed_percent
     
         # More linear velocity on straights
         '''
