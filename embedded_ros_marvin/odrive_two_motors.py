@@ -9,7 +9,7 @@ from odrive.enums import (
 
 # Robot Parameters
 WHEEL_BASE = 0.77  # Distance between wheels (meters)
-WHEEL_DIAMETER = 0.2032  # Wheel diameter (meters)
+WHEEL_DIAMETER = 0.192  # Wheel diameter (meters)
 PI = 3.14159265359
 VEL_TO_RPS = 1.0 / (WHEEL_DIAMETER * PI) * 98.0 / 3.0
 LEFT_POLARITY = 1
