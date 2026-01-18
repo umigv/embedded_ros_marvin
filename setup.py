@@ -29,7 +29,8 @@ setup(
             "LED_subscriber = embedded_ros_marvin.led_subscriber:main",
             "enc_odom_publisher = embedded_ros_marvin.enc_odom_publisher:main",
             "pure_pursuit_controller = embedded_ros_marvin.pure_pursuit_controller:main",
-            "pure_pursuit_lookahead = embedded_ros_marvin.pure_pursuit_lookahead:main"
+            "pure_pursuit_lookahead = embedded_ros_marvin.pure_pursuit_lookahead:main",
+            "recovery_executable = embedded_ros_marvin.recovery_executable:main"
         ],
     },
 )
