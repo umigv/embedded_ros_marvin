@@ -21,7 +21,7 @@ class DriveConfig:
     right_polarity: int = -1
 
     # Sampling / encoder
-    motor_encoder_counts_per_rev: int = 42
+    encoder_counts_per_motor_rev: int = 42
     sample_time_s: float = 0.02
 
     # E-stop
@@ -47,8 +47,8 @@ class DriveConfig:
 
     @property
     def wheel_vel_std_mps(self) -> float:
-        counts_per_wheel_rev = float(self.motor_encoder_counts_per_rev) * float(self.gear_ratio)
-        distance_per_count = self.wheel_circumference_m / counts_per_wheel_rev
+        encoder_counts_per_wheel_rev = float(self.encoder_counts_per_motor_rev) * float(self.gear_ratio)
+        distance_per_count = self.wheel_circumference_m / encoder_counts_per_wheel_rev
         return distance_per_count / self.sample_time_s
 
     @property
@@ -126,7 +126,7 @@ class DualODriveController(Node):
         msg.twist.twist.angular.x = 0.0
         msg.twist.twist.angular.y = 0.0
         msg.twist.twist.angular.z = angular_radps
-        
+
         msg.twist.covariance = self.config.twist_covariance(linear_mps, angular_radps)
 
         self.publisher.publish(msg)
