@@ -119,12 +119,14 @@ class DualODriveController(Node):
         msg = TwistWithCovarianceStamped()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = "base_link"
+
         msg.twist.twist.linear.x = linear_mps
         msg.twist.twist.linear.y = 0.0
         msg.twist.twist.linear.z = 0.0
         msg.twist.twist.angular.x = 0.0
         msg.twist.twist.angular.y = 0.0
         msg.twist.twist.angular.z = angular_radps
+        
         msg.twist.covariance = self.config.twist_covariance(linear_mps, angular_radps)
 
         self.publisher.publish(msg)
