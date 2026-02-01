@@ -17,8 +17,8 @@ class DriveConfig:
     gear_ratio: float = 98.0 / 3.0
 
     # Polarity (motor-native <-> robot-forward convention)
-    left_polarity: int = 1
-    right_polarity: int = -1
+    left_polarity: int = -1
+    right_polarity: int = 1
 
     # Sampling / encoder
     encoder_counts_per_motor_rev: int = 42
@@ -93,10 +93,10 @@ class DualODriveController(Node):
 
         self.config = DriveConfig()
 
-        self.odrive_left = odrive.find_any(serial_number="3972354E3231")
+        self.odrive_left = odrive.find_any(serial_number="395934763331")
         self.initialize_odrive(self.odrive_left)
 
-        self.odrive_right = odrive.find_any(serial_number="396F35573231")
+        self.odrive_right = odrive.find_any(serial_number="384934743539")
         self.initialize_odrive(self.odrive_right)
 
         self.subscription = self.create_subscription(Twist, '/joy_cmd_vel', self.cmd_vel_callback, 10)
