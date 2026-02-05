@@ -8,35 +8,31 @@ from std_msgs.msg import Float32
 from rclpy.executors import ExternalShutdownException
 import math
 
-odrive_executable = None
+recovery_executable = None
 
-class OdriveExecutable(Node):
+class RecoveryExecutable(Node):
     def __init__(self):
-        super().__init__('odrive_executable')
-        self.publisher_ = self.create_publisher(Twist, 'joy_cmd_vel', 10)
+        super().__init__('recovery_executable')
+        self.publisher_Twist = self.create_publisher(Twist, 'joy_cmd_vel', 10)
+        self.publisher_Boolean = self.create_publisher(Bool, 'recoveryOngoingTopic', 10)
         timer_period = 0.5  # seconds
         self.velocity_control_period = 0.5 #seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
         self.timer2 = self.create_timer(self.velocity_control_period, self.set_velocity_from_error)
-        self.i = 0
-        #self.subscription = self.create_subscription(
-        #    Float32,
-        #    'ultrasoundReadings',
-        #    self.listener_callback,
-        #    10)
-        #self.subscription
+        self.subscription = self.create_subscription(Bool, 'recoveryOngoingTopic', self.listener_callback, 10)
         self.timeElapsed = 0.0
         self.ultraSoundReadingFloat = 2000.0
-        self.targetLinearVelocity = 0.0 #m/s
-        self.targetAngularVelocity = 0.0 #rad/s
+        self.targetLinearVelocity = 0.0 #m/s???
+        self.targetAngularVelocity = 0.0 #rad/s???
         self.setTargetLinearVelocity = False
         self.targetPosition = 0.30 #meters
         self.distanceTraveled = 0.0
         self.proportional = 0.333
-        self.recoveryComplete = False
+        self.recoveryOngoing = False
         self.beginSweeping = False
         self.radiansTravelled = 0.0
         self.turnRight = False
+        self.sweepBegan = False
         
         ultrasoundTimerPeriod = 0.05
         try:
@@ -61,9 +57,9 @@ class OdriveExecutable(Node):
             except:
                 self.get_logger().info("not reading ultrasound values")
 
-    #def listener_callback(self, msg):
-        #self.get_logger().info(f'ultrasound message: {str(msg.data)}')
-        #self.ultraSoundReadingFloat = msg.data
+    def listener_callback(self, msg): #Note from Hannah & Ash: How does msg variable work, and does it conflict with msg var in twist?
+        self.get_logger().info(f'recoveryOngoing: {bool(msg.data)}')
+        self.recoveryOngoing = msg.data
 
     #This funciton is called periodically. It actually publishes the velocity messages and has the logic of whether to call the function that just drives teh robot backwards or call the sweep function
     def timer_callback(self):
@@ -75,20 +71,20 @@ class OdriveExecutable(Node):
         msg.linear.x = -self.targetLinearVelocity
         msg.angular.z = self.targetAngularVelocity
         #self.get_logger().info(str(msg))
-        if self.recoveryComplete == False:
-            self.publisher_.publish(msg)
+        if self.recoveryOngoing == True:
+            self.publisher_Twist.publish(msg)
         #self.get_logger().info(f'ultrasoundreading: {self.ultraSoundReadingFloat}')
         self.timeElapsed += 0.5
 
     #this tests if there is an object closer than 40 centimeters to the robot, and calls the method to back up if there isn't anything
-        if self.ultraSoundReadingFloat >= 40.0:
+        if self.ultraSoundReadingFloat >= 40.0 and self.recoveryOngoing == True:
             self.setTargetLinearVelocity = True
             self.targetAngularVelocity = 0.0
             self.beginSweeping = False
             #self.get_logger().info("target velocity is true")
 
     #this tests if there is an object closer than 40 centimeters, in which case it calls the sweeping method
-        if self.ultraSoundReadingFloat < 40.0:
+        if self.ultraSoundReadingFloat < 40.0 and self.recoveryOngoing == True:
             self.setTargetLinearVelocity = False
             self.targetLinearVelocity = 0.0
             self.beginSweeping = True
@@ -100,29 +96,36 @@ class OdriveExecutable(Node):
     #currently, it is set to backup 0.30 meters
     def set_velocity_from_error(self):
 
-        if self.setTargetLinearVelocity == True and self.recoveryComplete == False:
-            self.get_logger().info("setting velocity from error")
+        if self.setTargetLinearVelocity == True and self.recoveryOngoing == True:
+            self.get_logger().info("backing up")
             self.distanceTraveled = self.distanceTraveled + (self.velocity_control_period * self.targetLinearVelocity)
             error = self.targetPosition - self.distanceTraveled
             self.targetLinearVelocity = self.proportional * error
             if error < 0.01:
+                #resets variables to prepare for another recovery  behavior and publishes recovery complete variables
                 self.targetLinearVelocity = 0.0
+                self.targetAngularVelocity = 0.0
                 self.setTargetLinearVelocity = False
-                self.recoveryComplete = True
+                self.distanceTraveled = 0.0
                 msg = Twist()
                 msg.linear.x = 0.0
                 msg.angular.z = 0.0
-                self.publisher_.publish(msg)
+                self.publisher_Twist.publish(msg)
+                self.recoveryOngoing = False
+                boolmsg = Bool()
+                boolmsg.data = False
+                self.publisher_Boolean.publish(boolmsg)
 
             self.get_logger().info(f'distancetraveled: {self.distanceTraveled}')
-            self.get_logger().info(f'error: {error}')
+            #self.get_logger().info(f'error: {error}')
             self.get_logger().info(f'targetLinearVelocity: {self.targetLinearVelocity}')
 
 #this function sets the robot's angular velocity to sweep left and right if it senses something directly behind it
 #the logic in the timer callback function should stop it from running once it doesn't sense something behind it
     def sweep_left_and_right(self):
-        self.get_logger().info(f'sweeping function called')
-        if self.beginSweeping == True:
+        #self.get_logger().info(f'sweeping function called')
+        if self.beginSweeping == True and self.recoveryOngoing == True:
+            self.sweepBegan = True
             self.get_logger().info(f'sweeping')
             #sweeps left pi/2 radians or 90 degrees one way at a speed of pi/9 radians per second
             if self.setTargetLinearVelocity == False and self.radiansTravelled < math.pi / 2 and self.turnRight == False:
@@ -137,15 +140,31 @@ class OdriveExecutable(Node):
             elif self.radiansTravelled <= -1 * math.pi / 2:
                 self.targetAngularVelocity = 0.0
                 self.beginSweeping = False
+                self.radiansTravelled = 0.0
+                self.targetLinearVelocity = 0.0
+                self.setTargetLinearVelocity = False
+                self.distanceTraveled = 0.0
+                msg = Twist()
+                msg.linear.x = 0.0
+                msg.angular.z = 0.0
+                self.publisher_Twist.publish(msg)
+                self.recoveryOngoing = False
+                boolmsg = Bool()
+                boolmsg.data = False
+                self.get_logger().info(f'recovery Failed')
+                self.publisher_Boolean.publish(boolmsg)
+        elif self.beginSweeping == False and self.sweepBegan == True:
+            self.sweepBegan = False
+            self.radiansTravelled = 0.0
 
 #this actually runs the code
 def main(args=None):
     try:
         rclpy.init(args=args)
-        global odrive_executable
-        odrive_executable = OdriveExecutable()
+        global recovery_executable
+        recovery_executable = RecoveryExecutable()
 
-        rclpy.spin(odrive_executable)
+        rclpy.spin(recovery_executable)
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
 
