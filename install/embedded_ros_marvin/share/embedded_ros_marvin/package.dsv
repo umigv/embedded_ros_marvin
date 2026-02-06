@@ -1,0 +1,6 @@
+source;share/embedded_ros_marvin/hook/pythonpath.ps1
+source;share/embedded_ros_marvin/hook/pythonpath.dsv
+source;share/embedded_ros_marvin/hook/pythonpath.sh
+source;share/embedded_ros_marvin/hook/ament_prefix_path.ps1
+source;share/embedded_ros_marvin/hook/ament_prefix_path.dsv
+source;share/embedded_ros_marvin/hook/ament_prefix_path.sh

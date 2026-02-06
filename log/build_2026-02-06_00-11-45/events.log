@@ -1,0 +1,105 @@
+[0.000000] (-) TimerEvent: {}
+[0.002500] (embedded_ros_marvin) JobQueued: {'identifier': 'embedded_ros_marvin', 'dependencies': OrderedDict()}
+[0.002680] (embedded_ros_marvin) JobStarted: {'identifier': 'embedded_ros_marvin'}
+[0.098532] (-) TimerEvent: {}
+[0.199613] (-) TimerEvent: {}
+[0.300929] (-) TimerEvent: {}
+[0.402121] (-) TimerEvent: {}
+[0.503320] (-) TimerEvent: {}
+[0.604625] (-) TimerEvent: {}
+[0.705975] (-) TimerEvent: {}
+[0.807320] (-) TimerEvent: {}
+[0.908549] (-) TimerEvent: {}
+[1.009736] (-) TimerEvent: {}
+[1.110835] (-) TimerEvent: {}
+[1.211624] (-) TimerEvent: {}
+[1.312289] (-) TimerEvent: {}
+[1.413048] (-) TimerEvent: {}
+[1.513871] (-) TimerEvent: {}
+[1.615146] (-) TimerEvent: {}
+[1.715962] (-) TimerEvent: {}
+[1.816963] (-) TimerEvent: {}
+[1.917779] (-) TimerEvent: {}
+[2.019249] (-) TimerEvent: {}
+[2.120405] (-) TimerEvent: {}
+[2.221398] (-) TimerEvent: {}
+[2.322502] (-) TimerEvent: {}
+[2.423838] (-) TimerEvent: {}
+[2.524908] (-) TimerEvent: {}
+[2.585602] (embedded_ros_marvin) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', 'build/embedded_ros_marvin', 'build', '--build-base', '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build', 'install', '--record', '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin', 'env': {'VNCDESKTOP': '62721f411d71:1 (ubuntu)', 'QT_SCALE_FACTOR': '1', 'USER': 'ubuntu', 'SUPERVISOR_GROUP_NAME': 'vnc', 'HOSTNAME': '62721f411d71', 'XDG_SESSION_TYPE': 'x11', 'SHLVL': '2', 'LD_LIBRARY_PATH': '/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/ubuntu', 'ROS_PYTHON_VERSION': '3', 'LC_CTYPE': 'C.UTF-8', 'DBUS_SESSION_BUS_ADDRESS': 'unix:abstract=/tmp/dbus-kWADQHsYR8,guid=b34ed7653d27c1061cbb817a698525ec', 'COLORTERM': 'truecolor', 'GNOME_KEYRING_CONTROL': '/home/ubuntu/.cache/keyring-D5F5J3', 'COLCON_PREFIX_PATH': '/home/ubuntu/Recovery_ws/install:/home/ubuntu/githubclone/install:/home/ubuntu/ros2_ws/install', 'ROS_DISTRO': 'humble', 'WINDOWID': '56623110', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'TERM': 'xterm-256color', 'GTK_OVERLAY_SCROLLING': '0', 'ROS_LOCALHOST_ONLY': '0', 'INSIDE_CAJA_PYTHON': '', 'PATH': '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'SESSION_MANAGER': 'local/62721f411d71:@/tmp/.ICE-unix/90,unix/62721f411d71:/tmp/.ICE-unix/90', 'DISPLAY': ':1', 'XDG_CURRENT_DESKTOP': 'MATE', 'SUPERVISOR_ENABLED': '1', 'SSH_AUTH_SOCK': '/home/ubuntu/.cache/keyring-D5F5J3/ssh', 'AMENT_PREFIX_PATH': '/home/ubuntu/ros2_ws/install/arduino_bridge:/home/ubuntu/Recovery_ws/install/recovery_package:/home/ubuntu/githubclone/install/embedded_ros_marvin:/opt/ros/humble', 'PASSWD': 'ubuntu', 'SUPERVISOR_SERVER_URL': 'unix:///var/run/supervisor.sock', 'SUPERVISOR_PROCESS_NAME': 'vnc', 'PWD': '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin', 'PYTHONPATH': '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/prefix_override:/home/ubuntu/.local/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages:/home/ubuntu/ros2_ws/install/arduino_bridge/lib/python3.10/site-packages:/home/ubuntu/Recovery_ws/install/recovery_package/lib/python3.10/site-packages:/home/ubuntu/githubclone/install/embedded_ros_marvin/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'MATE_DESKTOP_SESSION_ID': 'this-is-deprecated', 'COLCON': '1', 'VTE_VERSION': '6800', 'QT_FONT_DPI': '96'}, 'shell': False}
+[2.628578] (-) TimerEvent: {}
+[2.730074] (-) TimerEvent: {}
+[2.831105] (-) TimerEvent: {}
+[2.932209] (-) TimerEvent: {}
+[3.033182] (-) TimerEvent: {}
+[3.048211] (embedded_ros_marvin) StderrLine: {'line': b"/home/ubuntu/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:289: UserWarning: Unknown distribution option: 'tests_require'\n"}
+[3.048917] (embedded_ros_marvin) StderrLine: {'line': b'  warnings.warn(msg)\n'}
+[3.133556] (-) TimerEvent: {}
+[3.234595] (-) TimerEvent: {}
+[3.242206] (embedded_ros_marvin) StdoutLine: {'line': b'running egg_info\n'}
+[3.273807] (embedded_ros_marvin) StdoutLine: {'line': b'writing build/embedded_ros_marvin/embedded_ros_marvin.egg-info/PKG-INFO\n'}
+[3.276041] (embedded_ros_marvin) StdoutLine: {'line': b'writing dependency_links to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/dependency_links.txt\n'}
+[3.276768] (embedded_ros_marvin) StdoutLine: {'line': b'writing entry points to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/entry_points.txt\n'}
+[3.277707] (embedded_ros_marvin) StdoutLine: {'line': b'writing requirements to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/requires.txt\n'}
+[3.278459] (embedded_ros_marvin) StdoutLine: {'line': b'writing top-level names to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/top_level.txt\n'}
+[3.279291] (embedded_ros_marvin) StdoutLine: {'line': b"writing manifest file 'build/embedded_ros_marvin/embedded_ros_marvin.egg-info/SOURCES.txt'\n"}
+[3.334994] (-) TimerEvent: {}
+[3.345475] (embedded_ros_marvin) StdoutLine: {'line': b"reading manifest file 'build/embedded_ros_marvin/embedded_ros_marvin.egg-info/SOURCES.txt'\n"}
+[3.348244] (embedded_ros_marvin) StdoutLine: {'line': b"writing manifest file 'build/embedded_ros_marvin/embedded_ros_marvin.egg-info/SOURCES.txt'\n"}
+[3.348945] (embedded_ros_marvin) StdoutLine: {'line': b'running build\n'}
+[3.349264] (embedded_ros_marvin) StdoutLine: {'line': b'running build_py\n'}
+[3.350074] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/pure_pursuit_lookahead.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.351066] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/odrive_test.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.351891] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/enc_odom_publisher.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.352557] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/pure_pursuit_controller.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.353297] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/odrive_sub_pub.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.353991] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/led_subscriber.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.354991] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/__init__.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.355584] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/recovery_executable.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.356489] (embedded_ros_marvin) StdoutLine: {'line': b'copying embedded_ros_marvin/odrive_two_motors.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin\n'}
+[3.358203] (embedded_ros_marvin) StdoutLine: {'line': b'running install\n'}
+[3.367599] (embedded_ros_marvin) StdoutLine: {'line': b'running install_lib\n'}
+[3.402615] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/pure_pursuit_lookahead.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.403634] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/odrive_test.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.404673] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/enc_odom_publisher.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.405232] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/pure_pursuit_controller.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.405972] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/odrive_sub_pub.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.406874] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/led_subscriber.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.408057] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/__init__.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.409127] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/recovery_executable.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.410742] (embedded_ros_marvin) StdoutLine: {'line': b'copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/odrive_two_motors.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin\n'}
+[3.413273] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/pure_pursuit_lookahead.py to pure_pursuit_lookahead.cpython-310.pyc\n'}
+[3.422532] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/odrive_test.py to odrive_test.cpython-310.pyc\n'}
+[3.424137] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/enc_odom_publisher.py to enc_odom_publisher.cpython-310.pyc\n'}
+[3.426182] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/pure_pursuit_controller.py to pure_pursuit_controller.cpython-310.pyc\n'}
+[3.428231] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/odrive_sub_pub.py to odrive_sub_pub.cpython-310.pyc\n'}
+[3.429989] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/led_subscriber.py to led_subscriber.cpython-310.pyc\n'}
+[3.431992] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/__init__.py to __init__.cpython-310.pyc\n'}
+[3.432882] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/recovery_executable.py to recovery_executable.cpython-310.pyc\n'}
+[3.435207] (-) TimerEvent: {}
+[3.436036] (embedded_ros_marvin) StdoutLine: {'line': b'byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/odrive_two_motors.py to odrive_two_motors.cpython-310.pyc\n'}
+[3.438691] (embedded_ros_marvin) StdoutLine: {'line': b'running install_data\n'}
+[3.439713] (embedded_ros_marvin) StdoutLine: {'line': b'copying resource/embedded_ros_marvin -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/ament_index/resource_index/packages\n'}
+[3.440760] (embedded_ros_marvin) StdoutLine: {'line': b'copying package.xml -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin\n'}
+[3.441597] (embedded_ros_marvin) StdoutLine: {'line': b'copying launch/launch_embedded.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin/launch\n'}
+[3.474860] (embedded_ros_marvin) StdoutLine: {'line': b'copying launch/launch_ekf.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin/launch\n'}
+[3.479529] (embedded_ros_marvin) StdoutLine: {'line': b'copying params/arv_ekf.yaml -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin/params\n'}
+[3.482377] (embedded_ros_marvin) StdoutLine: {'line': b'running install_egg_info\n'}
+[3.527350] (embedded_ros_marvin) StdoutLine: {'line': b"removing '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin-0.0.0-py3.10.egg-info' (and everything under it)\n"}
+[3.535486] (-) TimerEvent: {}
+[3.560517] (embedded_ros_marvin) StdoutLine: {'line': b'Copying build/embedded_ros_marvin/embedded_ros_marvin.egg-info to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin-0.0.0-py3.10.egg-info\n'}
+[3.564848] (embedded_ros_marvin) StdoutLine: {'line': b'running install_scripts\n'}
+[3.636119] (-) TimerEvent: {}
+[3.737180] (-) TimerEvent: {}
+[3.799078] (embedded_ros_marvin) StdoutLine: {'line': b'Installing LED_subscriber script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.799647] (embedded_ros_marvin) StdoutLine: {'line': b'Installing dual_odrive_controller script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.799927] (embedded_ros_marvin) StdoutLine: {'line': b'Installing enc_odom_publisher script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.800470] (embedded_ros_marvin) StdoutLine: {'line': b'Installing odrive_controller script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.800842] (embedded_ros_marvin) StdoutLine: {'line': b'Installing pure_pursuit_controller script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.801182] (embedded_ros_marvin) StdoutLine: {'line': b'Installing pure_pursuit_lookahead script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.801609] (embedded_ros_marvin) StdoutLine: {'line': b'Installing recovery_executable script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin\n'}
+[3.802476] (embedded_ros_marvin) StdoutLine: {'line': b"writing list of installed files to '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/install.log'\n"}
+[3.866521] (-) TimerEvent: {}
+[3.870312] (embedded_ros_marvin) CommandEnded: {'returncode': 0}
+[3.907040] (embedded_ros_marvin) JobEnded: {'identifier': 'embedded_ros_marvin', 'rc': 0}
+[3.908848] (-) EventReactorShutdown: {}

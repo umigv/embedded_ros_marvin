@@ -1,0 +1,62 @@
+[2.586s] Invoking command in '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin': PYTHONPATH=/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/prefix_override:/home/ubuntu/.local/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base build/embedded_ros_marvin build --build-base /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build install --record /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/install.log --single-version-externally-managed install_data
+[3.046s] /home/ubuntu/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:289: UserWarning: Unknown distribution option: 'tests_require'
+[3.046s]   warnings.warn(msg)
+[3.240s] running egg_info
+[3.271s] writing build/embedded_ros_marvin/embedded_ros_marvin.egg-info/PKG-INFO
+[3.273s] writing dependency_links to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/dependency_links.txt
+[3.274s] writing entry points to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/entry_points.txt
+[3.275s] writing requirements to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/requires.txt
+[3.276s] writing top-level names to build/embedded_ros_marvin/embedded_ros_marvin.egg-info/top_level.txt
+[3.277s] writing manifest file 'build/embedded_ros_marvin/embedded_ros_marvin.egg-info/SOURCES.txt'
+[3.343s] reading manifest file 'build/embedded_ros_marvin/embedded_ros_marvin.egg-info/SOURCES.txt'
+[3.346s] writing manifest file 'build/embedded_ros_marvin/embedded_ros_marvin.egg-info/SOURCES.txt'
+[3.346s] running build
+[3.347s] running build_py
+[3.347s] copying embedded_ros_marvin/pure_pursuit_lookahead.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.348s] copying embedded_ros_marvin/odrive_test.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.349s] copying embedded_ros_marvin/enc_odom_publisher.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.350s] copying embedded_ros_marvin/pure_pursuit_controller.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.351s] copying embedded_ros_marvin/odrive_sub_pub.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.351s] copying embedded_ros_marvin/led_subscriber.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.352s] copying embedded_ros_marvin/__init__.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.353s] copying embedded_ros_marvin/recovery_executable.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.354s] copying embedded_ros_marvin/odrive_two_motors.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin
+[3.356s] running install
+[3.365s] running install_lib
+[3.400s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/pure_pursuit_lookahead.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.401s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/odrive_test.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.402s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/enc_odom_publisher.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.403s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/pure_pursuit_controller.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.403s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/odrive_sub_pub.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.404s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/led_subscriber.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.406s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/__init__.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.407s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/recovery_executable.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.408s] copying /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build/lib/embedded_ros_marvin/odrive_two_motors.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin
+[3.411s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/pure_pursuit_lookahead.py to pure_pursuit_lookahead.cpython-310.pyc
+[3.420s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/odrive_test.py to odrive_test.cpython-310.pyc
+[3.422s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/enc_odom_publisher.py to enc_odom_publisher.cpython-310.pyc
+[3.424s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/pure_pursuit_controller.py to pure_pursuit_controller.cpython-310.pyc
+[3.426s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/odrive_sub_pub.py to odrive_sub_pub.cpython-310.pyc
+[3.427s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/led_subscriber.py to led_subscriber.cpython-310.pyc
+[3.429s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/__init__.py to __init__.cpython-310.pyc
+[3.430s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/recovery_executable.py to recovery_executable.cpython-310.pyc
+[3.434s] byte-compiling /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin/odrive_two_motors.py to odrive_two_motors.cpython-310.pyc
+[3.436s] running install_data
+[3.437s] copying resource/embedded_ros_marvin -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/ament_index/resource_index/packages
+[3.438s] copying package.xml -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin
+[3.439s] copying launch/launch_embedded.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin/launch
+[3.473s] copying launch/launch_ekf.py -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin/launch
+[3.477s] copying params/arv_ekf.yaml -> /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/share/embedded_ros_marvin/params
+[3.480s] running install_egg_info
+[3.525s] removing '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin-0.0.0-py3.10.egg-info' (and everything under it)
+[3.558s] Copying build/embedded_ros_marvin/embedded_ros_marvin.egg-info to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages/embedded_ros_marvin-0.0.0-py3.10.egg-info
+[3.562s] running install_scripts
+[3.797s] Installing LED_subscriber script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.797s] Installing dual_odrive_controller script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.797s] Installing enc_odom_publisher script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.798s] Installing odrive_controller script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.798s] Installing pure_pursuit_controller script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.799s] Installing pure_pursuit_lookahead script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.799s] Installing recovery_executable script to /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/embedded_ros_marvin
+[3.800s] writing list of installed files to '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/install.log'
+[3.868s] Invoked command in '/home/ubuntu/complete_embedded_ws/embedded_ros_marvin' returned '0': PYTHONPATH=/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/prefix_override:/home/ubuntu/.local/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/complete_embedded_ws/embedded_ros_marvin/install/embedded_ros_marvin/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base build/embedded_ros_marvin build --build-base /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/build install --record /home/ubuntu/complete_embedded_ws/embedded_ros_marvin/build/embedded_ros_marvin/install.log --single-version-externally-managed install_data
