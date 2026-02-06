@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: embedded_ros_marvin
+Version: 0.0.0
+Summary: TODO: Package description
+Maintainer: ericb
+Maintainer-email: ericbi@umich.edu
+License: TODO: License declaration
+Requires-Dist: setuptools
+Dynamic: license
+Dynamic: maintainer
+Dynamic: maintainer-email
+Dynamic: requires-dist
+Dynamic: summary
