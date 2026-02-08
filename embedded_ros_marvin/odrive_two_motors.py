@@ -12,8 +12,8 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class DriveConfig:
     # Geometry / drivetrain
-    track_width_m: float = 0.77
-    wheel_diameter_m: float = 0.192
+    track_width_m: float = 0.724
+    wheel_diameter_m: float = 0.181356
     gear_ratio: float = 98.0 / 3.0
 
     # Polarity (motor-native <-> robot-forward convention)
