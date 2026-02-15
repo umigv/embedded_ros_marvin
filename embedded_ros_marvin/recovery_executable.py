@@ -13,7 +13,7 @@ recovery_executable = None
 class RecoveryExecutable(Node):
     def __init__(self):
         super().__init__('recovery_executable')
-        self.publisher_Twist = self.create_publisher(Twist, 'recovery_cmd_vel', 10)
+        self.publisher_Twist = self.create_publisher(Twist, 'joy_cmd_vel', 10)
         self.publisher_Boolean = self.create_publisher(Bool, 'recoveryOngoingTopic', 10)
         timer_period = 0.5  # seconds
         self.velocity_control_period = 0.5 #seconds
