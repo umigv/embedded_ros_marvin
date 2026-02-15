@@ -99,9 +99,9 @@ class DualODriveController(Node):
         self.odrive_right = odrive.find_any(serial_number="384934743539")
         self.initialize_odrive(self.odrive_right)
 
-        self.subscription = self.create_subscription(Twist, '/joy_cmd_vel', self.cmd_vel_callback, 10)
+        self.subscription = self.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 10)
 
-        self.publisher = self.create_publisher(TwistWithCovarianceStamped, '/enc_vel', 10)
+        self.publisher = self.create_publisher(TwistWithCovarianceStamped, 'enc_vel', 10)
         self.timer = self.create_timer(self.config.sample_time_s, self.publish_enc_vel)
 
     def cmd_vel_callback(self, msg):
