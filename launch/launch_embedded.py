@@ -17,14 +17,16 @@ def generate_launch_description():
     dual_odrive_controller_node = launch_ros.actions.Node(
         package='embedded_ros_marvin', 
         executable='dual_odrive_controller',
-        output='screen'
+        output='screen',
+        remappings=[('enc_vel', 'enc_vel/raw')],
     )
 
     enc_odom_publisher_node = launch_ros.actions.Node(
         package='embedded_ros_marvin', 
         executable='enc_odom_publisher',
         output='screen',
-        condition=launch.conditions.IfCondition(use_enc_odom_arg)
+        condition=launch.conditions.IfCondition(use_enc_odom_arg),
+        remappings=[('odom', 'odom/local')],
     )
 
     return launch.LaunchDescription([
