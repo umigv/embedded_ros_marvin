@@ -22,15 +22,15 @@ class DriveConfig:
 
     # Sampling / encoder
     encoder_counts_per_motor_rev: int = 42
-    sample_time_s: float = 0.02
+    sample_time_s: float = 0.01
 
     # E-stop
     estop_file_path: str = "/tmp/estop_value.txt"
 
     # Dynamic covariance model (variance = floor + gain * f(speed)^2)
-    linear_variance_gain: float = 0.004
+    linear_variance_gain: float = 0.0004
     min_linear_variance: float = 1e-6
-    angular_variance_gain: float = 0.003
+    angular_variance_gain: float = 0.0004
     min_angular_variance: float = 1e-6
 
     @property
@@ -61,7 +61,9 @@ class DriveConfig:
 
     def twist_covariance(self, linear_mps: float, angular_radps: float) -> list[float]:
         linear_variance_dynamic = self.linear_variance_gain * (linear_mps ** 2)
-        angular_variance_dynamic = self.angular_variance_gain * (angular_radps ** 2)
+        angular_variance_dynamic = self.angular_variance_gain * (
+            linear_mps ** 2 / self.track_width_m ** 2 + angular_radps ** 2
+        )
 
         linear_variance = max(self.min_linear_variance, self.linear_variance_static + linear_variance_dynamic)
         angular_variance = max(self.min_angular_variance, self.angular_variance_static + angular_variance_dynamic)
