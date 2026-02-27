@@ -4,7 +4,6 @@ from std_msgs.msg import Bool
 from std_msgs.msg import String
 import serial
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String
 from std_msgs.msg import Float32
 from rclpy.executors import ExternalShutdownException
 import math
@@ -43,6 +42,7 @@ class RecoveryExecutable(Node):
         self.radiansTravelled = 0.0
         self.turnRight = False
         self.sweepBegan = False
+        self.backingUp = False
         
         ultrasoundTimerPeriod = 0.05
         try:
@@ -95,7 +95,7 @@ class RecoveryExecutable(Node):
             #self.get_logger().info("target velocity is true")
 
     #this tests if there is an object closer than 40 centimeters, in which case it calls the sweeping method
-        if self.ultraSoundReadingFloat < 40.0 and self.recoveryOngoing == True:
+        if self.ultraSoundReadingFloat < 40.0 and self.recoveryOngoing == True and self.backingUp == False:
             self.setTargetLinearVelocity = False
             self.targetLinearVelocity = 0.0
             self.beginSweeping = True
@@ -107,6 +107,7 @@ class RecoveryExecutable(Node):
     #currently, it is set to backup 0.30 meters
     def set_velocity_from_error(self):
 
+        self.backingUp = True
         if self.setTargetLinearVelocity == True and self.recoveryOngoing == True:
             self.get_logger().info("backing up")
             self.distanceTraveled = self.distanceTraveled + (self.velocity_control_period * self.targetLinearVelocity)
@@ -156,7 +157,7 @@ class RecoveryExecutable(Node):
         # boolmsg = Bool()
         # boolmsg.data = False
         self.get_logger().info(f'recovery Failed')
-        response = self.send_request(recovery_executable.recoveryOngoing)
+        response = self.send_request(self.recoveryOngoing)
         # self.publisher_Boolean.publish(boolmsg)
 
     #This should publish the message back to nav
