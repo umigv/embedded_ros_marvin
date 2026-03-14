@@ -3,15 +3,11 @@
 ## Key Project Structrure
 ```
 ├── embedded_ros_marvin/              # Source folder containing ROS 2 node implementations
-│   ├── odrive_two_motors.py          # Subscribe to /joy_cmd_vel, control the odrives and publish /enc_vel
-│   └── enc_odom_publisher.py         # Subscribe to /enc_vel and publish /odom
-│   └── led_subscriber.py             # Subscribe to /is_auto and control safety light LED
-│   └── pure_pursuit_lookahead.py     # Action server for follow_path, subscribe to /odom and publish /joy_cmd_vel
+│   ├── led_subscriber.py             # Subscribe to /is_auto and control safety light LED
+│   ├── odrive_two_motors.py          # Subscribe to /joy_cmd_vel, control the odrives and publish /enc_vel/raw
+│   └── recovery_executable.py        # Subscribe to /state and call /state/set_recovery, controls recovery and publish /recovery_cmd_vel
 ├── launch/                           
-│   ├── launch_embedded.py            # Launches embedded nodes
-│   └── launch_ekf.py                 # Launches the EKF node for sensor fusion
-├── params/                           
-│   └── arv_ekf.yaml                  # Parameters for the EKF node
+│   └── launch_embedded.py            # Launches embedded nodes
 ├── sdr_estop/                        
 │   ├── estopnew.grc                  # GNU radio flowgraph
 │   └── estop.py                      # Auto generated python code from flowgraph
@@ -34,19 +30,11 @@
 - If odrive errors during runtime, enter odrivetool and type `odrv0.clear_errors()`, `odrv1.clear_errors()`
     - If error persists and odrive still flash red, double check if power is on and physical estop is unpressed
 
-### **2. Launch Teleop**
-- Type `ros2 launch embedded_ros_marvin launch_embedded.py use_enc_odom:=True`
-    - Make sure to quit odrivetool first
-    - `use_enc_odom:=True` is optional and will publish encoder odometry
-    - To reset encoder odometry to (0,0), rerun the launch command
+### **2. Launch Emedded Nodes**
+- Type `ros2 launch embedded_ros_marvin launch_embedded.py`. Make sure to quit odrivetool first
 - Odrive indicator lights should now flash green
-- In a new terminal, type `ros2 launch marvin_bot_description teleop_launch.py` to start PS4 teleop
 
-### **3. To start autonomous controller**
-- Type `ros2 run embedded_ros_marvin pure_pursuit_lookahead`
-    - Make sure to first quit PS4 teleop and reset encoder odometry
-
-### **4. To start remote estop**
+### **3. To start remote estop**
 - Open estopnew.grc located in the sdr_estop folder
 - Run the flowgraph 
 
@@ -70,20 +58,6 @@ ros2 launch embedded_ros_marvin launch_embedded.py
 #### **Parameters:**
 - **`use_LED`** (default: `true`)
   - If `false`, the LED subscriber node will be disabled.
-  
-- **`use_enc_odom`** (default: `false`)
-  - If `true`, an odom message will be published using encoder-based estimation, and the TF transform will be broadcast.
-  - This should be set to `false` when using sensor fusion.
-
-
-### **2. Launch EKF**
-This launch file starts the robot_localization EKF node
-
-```sh
-ros2 launch embedded_ros_marvin launch_ekf.py
-```
-
-  - The EKF node uses parameters specified in: params/arv_ekf.yaml
 
 ---
 

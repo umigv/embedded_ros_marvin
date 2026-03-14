@@ -5,7 +5,6 @@ import launch.actions
 def generate_launch_description():
     # Declare launch arguments
     use_LED_arg = launch.substitutions.LaunchConfiguration('use_LED')
-    use_enc_odom_arg = launch.substitutions.LaunchConfiguration('use_enc_odom')
 
     led_node = launch_ros.actions.Node(
         package='embedded_ros_marvin', 
@@ -21,18 +20,8 @@ def generate_launch_description():
         remappings=[('enc_vel', 'enc_vel/raw')],
     )
 
-    enc_odom_publisher_node = launch_ros.actions.Node(
-        package='embedded_ros_marvin', 
-        executable='enc_odom_publisher',
-        output='screen',
-        condition=launch.conditions.IfCondition(use_enc_odom_arg),
-        remappings=[('odom', 'odom/local')],
-    )
-
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument('use_LED', default_value='true', description="Enable LED node"),
-        launch.actions.DeclareLaunchArgument('use_enc_odom', default_value='false', description="Enable encoder odometry and TF"),
         dual_odrive_controller_node,
-        enc_odom_publisher_node,
         led_node
     ])
