@@ -19,9 +19,11 @@ class RecoveryExecutable(Node):
         super().__init__('recovery_executable')
         self.publisher_Twist = self.create_publisher(Twist, 'recovery_cmd_vel', 10)
         timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.timer2 = self.create_timer(timer_period, self.set_velocity_from_error)
-        self.timer3 = self.create_timer(timer_period, self.sweep_left_and_right)
+        self.velocity_publishing_timer = self.create_timer(timer_period, self.velocity_publishing)
+        self.back_up_velocity_timer = self.create_timer(timer_period, self.set_velocity_from_error)
+        self.sweep_timer = self.create_timer(timer_period, self.sweep_left_and_right)
+        self.arduino_timer = self.create_timer(0.05, self.updateArduinoReading)
+
 
         self.subscription = self.create_subscription(String, 'state', self.listener_callback, QoSProfile(
                 history=QoSHistoryPolicy.KEEP_LAST,
@@ -45,14 +47,12 @@ class RecoveryExecutable(Node):
         self.radiansTravelled = 0.0
         self.state = "NoPublishing"
        
-        ultrasoundTimerPeriod = 0.05
         try:
             self.arduino = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
             self.get_logger().info("Connected to Arduino")
         except serial.SerialException:
             self.get_logger().error("Could not open serial port")
             self.arduino = None
-        self.timer4 = self.create_timer(ultrasoundTimerPeriod, self.updateArduinoReading)
 
     #This gets in the arduino reading and updates the self.ultraSoundReadingFloat, which is where we use the ultrasound readigns in the rest of the code
     def updateArduinoReading(self):
@@ -73,6 +73,7 @@ class RecoveryExecutable(Node):
                 self.ultraSoundReadingFloat = median(self.ultraSoundReadingHistory)
                
                 if self.state == "BeginRecovery":
+                    self.state = "temp"
                     self.begin_recovery()
             except:
                 self.get_logger().info("not reading ultrasound values")
@@ -82,7 +83,7 @@ class RecoveryExecutable(Node):
             self.state = "BeginRecovery"
 
     #This funciton is called periodically. It actually publishes the velocity messages and has the logic of whether to call the function that just drives teh robot backwards or call the sweep function
-    def timer_callback(self):
+    def velocity_publishing(self):
         #self.get_logger().info(f'calling timer callback')
         self.get_logger().info(f'ultrasoundreading: {self.ultraSoundReadingFloat}')
 
@@ -114,22 +115,23 @@ class RecoveryExecutable(Node):
 #the logic in the timer callback function should stop it from running once it doesn't sense something behind it
     def sweep_left_and_right(self):
         #self.get_logger().info(f'sweeping function called')
+        if self.state != "beginSweep" and self.state != "flipDirectionSweep":
+            return
         if self.ultraSoundReadingFloat >= 40:
             self.state = "beginBackUp"
         elif self.state == "beginSweep":
             self.get_logger().info(f'sweeping counterclockwise')
-            if self.radiansTravelled < 0.349066:
+            if self.radiansTravelled < 0.349066:#sweeps 20 degrees one direction
             #sweeps left pi/2 radians or 90 degrees one way at a speed of pi/9 radians per second
                 self.targetAngularVelocity = math.pi / 9
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
-            elif self.radiansTravelled >= 0.349066: #sweeps 20 degrees one direction
+            else: 
                 self.state = "flipDirectionSweep"
-            #sweeps the other direction 40 degrees
         elif self.state == "flipDirectionSweep":
             if self.radiansTravelled > -0.349066:
                 self.targetAngularVelocity = -1 * math.pi / 9
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
-            elif self.radiansTravelled <= -0.349066:
+            else:
                 self.end_recovery()
    
     def end_recovery(self):
@@ -154,7 +156,7 @@ class RecoveryExecutable(Node):
             self.targetAngularVelocity = 0.0
 
     #this tests if there is an object closer than 40 centimeters, in which case it calls the sweeping method
-        elif self.ultraSoundReadingFloat < 40.0:
+        else:
             self.targetLinearVelocity = 0.0
             self.state = "beginSweep"
 
