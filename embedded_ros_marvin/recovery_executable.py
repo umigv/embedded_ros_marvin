@@ -10,6 +10,7 @@ import math
 from std_srvs.srv import SetBool
 import sys
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDurabilityPolicy
+from statistics import median
 
 recovery_executable = None
 
@@ -36,6 +37,7 @@ class RecoveryExecutable(Node):
 
         self.timeElapsed = 0.0
         self.ultraSoundReadingFloat = 2000.0
+        self.ultraSoundReadingHistory = []  # Store last 5 readings for median filter
         self.targetLinearVelocity = 0.0 #m/s???
         self.targetAngularVelocity = 0.0 #rad/s???
         self.setTargetLinearVelocity = False
@@ -44,7 +46,7 @@ class RecoveryExecutable(Node):
         self.proportional = 0.333
         self.radiansTravelled = 0.0
         self.state = "NoPublishing"
-        
+       
         ultrasoundTimerPeriod = 0.05
         try:
             self.arduino = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
@@ -63,7 +65,15 @@ class RecoveryExecutable(Node):
             packet = self.arduino.readline()
             ultraSoundReadingString = packet.decode('utf-8', errors='ignore').rstrip('\n')
             try:
-                self.ultraSoundReadingFloat = float(ultraSoundReadingString)
+                raw_reading = float(ultraSoundReadingString)
+                # Add raw reading to history and keep only last 5 values
+                self.ultraSoundReadingHistory.append(raw_reading)
+                if len(self.ultraSoundReadingHistory) > 5:
+                    self.ultraSoundReadingHistory.pop(0)
+               
+                # Use median of the last 5 readings (or fewer if not yet at 5)
+                self.ultraSoundReadingFloat = median(self.ultraSoundReadingHistory)
+               
                 if self.state == "BeginRecovery":
                     self.begin_recovery()
             except:
@@ -92,7 +102,7 @@ class RecoveryExecutable(Node):
     #currently, it is set to backup 0.30 meters
     def set_velocity_from_error(self):
 
-        if self.state = "beginBackUp":
+        if self.state == "beginBackUp":
             self.get_logger().info("backing up")
             self.distanceTraveled = self.distanceTraveled + (self.velocity_control_period * self.targetLinearVelocity)
             error = self.targetPosition - self.distanceTraveled
@@ -109,22 +119,22 @@ class RecoveryExecutable(Node):
         #self.get_logger().info(f'sweeping function called')
         if self.ultraSoundReadingFloat >= 40:
             self.state = "beginBackUp"
-        elif self.state == "beginSweep": 
+        elif self.state == "beginSweep":
             self.get_logger().info(f'sweeping counterclockwise')
             if self.radiansTravelled < 0.349066:
             #sweeps left pi/2 radians or 90 degrees one way at a speed of pi/9 radians per second
-                self.targetAngularVelocity = math.pi / 9 
+                self.targetAngularVelocity = math.pi / 9
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             elif self.radiansTravelled >= 0.349066: #sweeps 20 degrees one direction
                 self.state = "flipDirectionSweep"
             #sweeps the other direction 40 degrees
         elif self.state == "flipDirectionSweep":
             if self.radiansTravelled > -0.349066:
-                self.targetAngularVelocity = -1 * math.pi / 9 
+                self.targetAngularVelocity = -1 * math.pi / 9
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             elif self.radiansTravelled <= -0.349066:
                 self.end_recovery()
-    
+   
     def end_recovery(self):
         self.targetAngularVelocity = 0.0
         self.radiansTravelled = 0.0
