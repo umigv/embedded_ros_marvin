@@ -17,12 +17,11 @@ class RecoveryExecutable(Node):
     def __init__(self):
         super().__init__('recovery_executable')
         self.publisher_Twist = self.create_publisher(Twist, 'recovery_cmd_vel', 10)
-        #self.publisher_Boolean = self.create_publisher(Bool, 'recoveryOngoingTopic', 10)
         timer_period = 0.5  # seconds
-        self.velocity_control_period = 0.5 #seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.timer2 = self.create_timer(self.velocity_control_period, self.set_velocity_from_error)
-        #self.subscription = self.create_subscription(Bool, 'recoveryOngoingTopic', self.listener_callback, 10)
+        self.timer2 = self.create_timer(timer_period, self.set_velocity_from_error)
+        self.timer3 = self.create_timer(timer_period, self.sweep_left_and_right)
+
         self.subscription = self.create_subscription(String, 'state', self.listener_callback, QoSProfile(
                 history=QoSHistoryPolicy.KEEP_LAST,
                 depth=1,
@@ -43,12 +42,8 @@ class RecoveryExecutable(Node):
         self.targetPosition = 0.30 #meters
         self.distanceTraveled = 0.0
         self.proportional = 0.333
-        self.recoveryOngoing = False
-        self.beginSweeping = False
         self.radiansTravelled = 0.0
-        self.turnRight = False
-        self.sweepBegan = False
-        self.backingUp = False
+        self.state = "NoPublishing"
         
         ultrasoundTimerPeriod = 0.05
         try:
@@ -69,14 +64,14 @@ class RecoveryExecutable(Node):
             ultraSoundReadingString = packet.decode('utf-8', errors='ignore').rstrip('\n')
             try:
                 self.ultraSoundReadingFloat = float(ultraSoundReadingString)
-                #self.get_logger().info("setting float value")
+                if self.state == "BeginRecovery":
+                    self.begin_recovery()
             except:
                 self.get_logger().info("not reading ultrasound values")
 
     def listener_callback(self, msg): #Note from Hannah & Ash: How does msg variable work, and does it conflict with msg var in twist?
-        #self.get_logger().info(f'recoveryOngoing: {bool(msg.data)}')
         if msg.data == 'recovery':
-            self.recoveryOngoing = True
+            self.state = "BeginRecovery"
 
     #This funciton is called periodically. It actually publishes the velocity messages and has the logic of whether to call the function that just drives teh robot backwards or call the sweep function
     def timer_callback(self):
@@ -88,33 +83,16 @@ class RecoveryExecutable(Node):
         msg.linear.x = -self.targetLinearVelocity
         msg.angular.z = self.targetAngularVelocity
         #self.get_logger().info(str(msg))
-        if self.recoveryOngoing == True:
+        if self.state != "NoPublishing":
             self.publisher_Twist.publish(msg)
         #self.get_logger().info(f'ultrasoundreading: {self.ultraSoundReadingFloat}')
         self.timeElapsed += 0.5
-
-    #this tests if there is an object closer than 40 centimeters to the robot, and calls the method to back up if there isn't anything
-        if self.ultraSoundReadingFloat >= 40.0 and self.recoveryOngoing == True:
-            self.setTargetLinearVelocity = True
-            self.targetAngularVelocity = 0.0
-            self.beginSweeping = False
-            #self.get_logger().info("target velocity is true")
-
-    #this tests if there is an object closer than 40 centimeters, in which case it calls the sweeping method
-        if self.ultraSoundReadingFloat < 40.0 and self.recoveryOngoing == True and self.backingUp == False:
-            self.setTargetLinearVelocity = False
-            self.targetLinearVelocity = 0.0
-            self.beginSweeping = True
-            self.sweep_left_and_right()
-#        if self.ultraSoundReadingFloat <= 40.0:
-#            self.set_conditional_velocity(self.ultraSoundReadingFloat)
 
     #this function sets the velocity to have the robot back up. The velocity starts large, then decreases as the robot gets closer to its target
     #currently, it is set to backup 0.30 meters
     def set_velocity_from_error(self):
 
-        self.backingUp = True
-        if self.setTargetLinearVelocity == True and self.recoveryOngoing == True:
+        if self.state = "beginBackUp":
             self.get_logger().info("backing up")
             self.distanceTraveled = self.distanceTraveled + (self.velocity_control_period * self.targetLinearVelocity)
             error = self.targetPosition - self.distanceTraveled
@@ -129,42 +107,49 @@ class RecoveryExecutable(Node):
 #the logic in the timer callback function should stop it from running once it doesn't sense something behind it
     def sweep_left_and_right(self):
         #self.get_logger().info(f'sweeping function called')
-        if self.beginSweeping == True and self.recoveryOngoing == True:
-            self.sweepBegan = True
-            self.get_logger().info(f'sweeping')
+        if self.ultraSoundReadingFloat >= 40:
+            self.state = "beginBackUp"
+        elif self.state == "beginSweep": 
+            self.get_logger().info(f'sweeping counterclockwise')
+            if self.radiansTravelled < 0.349066:
             #sweeps left pi/2 radians or 90 degrees one way at a speed of pi/9 radians per second
-            if self.setTargetLinearVelocity == False and self.radiansTravelled < math.pi / 2 and self.turnRight == False:
                 self.targetAngularVelocity = math.pi / 9 
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             elif self.radiansTravelled >= 0.349066: #sweeps 20 degrees one direction
-                self.turnRight = True
+                self.state = "flipDirectionSweep"
             #sweeps the other direction 40 degrees
-            if self.setTargetLinearVelocity == False and self.radiansTravelled > -0.349066 and self.turnRight == True:
+        elif self.state == "flipDirectionSweep":
+            if self.radiansTravelled > -0.349066:
                 self.targetAngularVelocity = -1 * math.pi / 9 
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             elif self.radiansTravelled <= -0.349066:
                 self.end_recovery()
-        elif self.beginSweeping == False and self.sweepBegan == True:
-            self.sweepBegan = False
-            self.radiansTravelled = 0.0
     
     def end_recovery(self):
         self.targetAngularVelocity = 0.0
-        self.beginSweeping = False
         self.radiansTravelled = 0.0
         self.targetLinearVelocity = 0.0
-        self.setTargetLinearVelocity = False
         self.distanceTraveled = 0.0
         msg = Twist()
         msg.linear.x = 0.0
         msg.angular.z = 0.0
         self.publisher_Twist.publish(msg)
-        self.recoveryOngoing = False
+        self.state = "NoPublishing"
         # boolmsg = Bool()
         # boolmsg.data = False
-        self.get_logger().info(f'recovery Failed')
-        response = self.send_request(self.recoveryOngoing)
+        self.get_logger().info(f'recovery ended')
+        response = self.send_request(False)
         # self.publisher_Boolean.publish(boolmsg)
+
+    def begin_recovery(self):
+        if self.ultraSoundReadingFloat >= 40.0:
+            self.state = "beginBackUp"
+            self.targetAngularVelocity = 0.0
+
+    #this tests if there is an object closer than 40 centimeters, in which case it calls the sweeping method
+        elif self.ultraSoundReadingFloat < 40.0:
+            self.targetLinearVelocity = 0.0
+            self.state = "beginSweep"
 
     #This should publish the message back to nav
     def send_request(self, set_recovery):
