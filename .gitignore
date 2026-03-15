@@ -1,2 +1,27 @@
-# Development
-.vscode/*
+# Vscode
+.vscode/
+
+# Python packaging
+*.egg-info/
+.eggs/
+PKG-INFO
+requirements.txt
+
+# Bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editable install artifacts
+pip-wheel-metadata/
+
+# ROS2
+build/
+install/
+log/
