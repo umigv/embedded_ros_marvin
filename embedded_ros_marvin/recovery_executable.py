@@ -35,12 +35,10 @@ class RecoveryExecutable(Node):
             self.get_logger().info('service not available, waiting again...')
         self.req = SetBool.Request()
 
-        self.timeElapsed = 0.0
         self.ultraSoundReadingFloat = 2000.0
         self.ultraSoundReadingHistory = []  # Store last 5 readings for median filter
         self.targetLinearVelocity = 0.0 #m/s???
         self.targetAngularVelocity = 0.0 #rad/s???
-        self.setTargetLinearVelocity = False
         self.targetPosition = 0.30 #meters
         self.distanceTraveled = 0.0
         self.proportional = 0.333
@@ -54,7 +52,7 @@ class RecoveryExecutable(Node):
         except serial.SerialException:
             self.get_logger().error("Could not open serial port")
             self.arduino = None
-        self.timer3 = self.create_timer(ultrasoundTimerPeriod, self.updateArduinoReading)
+        self.timer4 = self.create_timer(ultrasoundTimerPeriod, self.updateArduinoReading)
 
     #This gets in the arduino reading and updates the self.ultraSoundReadingFloat, which is where we use the ultrasound readigns in the rest of the code
     def updateArduinoReading(self):
@@ -96,7 +94,6 @@ class RecoveryExecutable(Node):
         if self.state != "NoPublishing":
             self.publisher_Twist.publish(msg)
         #self.get_logger().info(f'ultrasoundreading: {self.ultraSoundReadingFloat}')
-        self.timeElapsed += 0.5
 
     #this function sets the velocity to have the robot back up. The velocity starts large, then decreases as the robot gets closer to its target
     #currently, it is set to backup 0.30 meters
@@ -104,7 +101,7 @@ class RecoveryExecutable(Node):
 
         if self.state == "beginBackUp":
             self.get_logger().info("backing up")
-            self.distanceTraveled = self.distanceTraveled + (self.velocity_control_period * self.targetLinearVelocity)
+            self.distanceTraveled = self.distanceTraveled + (0.5 * self.targetLinearVelocity)
             error = self.targetPosition - self.distanceTraveled
             self.targetLinearVelocity = self.proportional * error
             if error < 0.01:
