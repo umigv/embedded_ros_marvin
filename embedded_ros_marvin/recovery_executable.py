@@ -32,11 +32,6 @@ class RecoveryExecutable(Node):
                 durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
             ),)
 
-        self.cli = self.create_client(SetBool, 'state/set_recovery')
-        while not self.cli.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('service not available, waiting again...')
-        self.req = SetBool.Request()
-
         self.ultraSoundReadingFloat = 2000.0
         self.ultraSoundReadingHistory = []  # Store last 5 readings for median filter
         self.targetLinearVelocity = 0.0 #m/s???
@@ -53,6 +48,11 @@ class RecoveryExecutable(Node):
         except serial.SerialException:
             self.get_logger().error("Could not open serial port")
             self.arduino = None
+
+        self.cli = self.create_client(SetBool, 'state/set_recovery')
+        if not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.req = SetBool.Request()
 
     #This gets in the arduino reading and updates the self.ultraSoundReadingFloat, which is where we use the ultrasound readigns in the rest of the code
     def updateArduinoReading(self):
@@ -115,7 +115,7 @@ class RecoveryExecutable(Node):
 #the logic in the timer callback function should stop it from running once it doesn't sense something behind it
     def sweep_left_and_right(self):
         #self.get_logger().info(f'sweeping function called')
-        if self.state != "beginSweep" and self.state != "flipDirectionSweep":
+        if self.state != "beginSweep" and self.state != "flipDirectionSweep" and self.state != "backUpAfterSweep":
             return
         if self.ultraSoundReadingFloat >= 40:
             self.state = "beginBackUp"
@@ -129,11 +129,22 @@ class RecoveryExecutable(Node):
                 self.state = "flipDirectionSweep"
         elif self.state == "flipDirectionSweep":
             if self.radiansTravelled > -0.349066:
+                self.get_logger().info(f'sweeping clockwise')
+
                 self.targetAngularVelocity = -1 * math.pi / 9
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             else:
+                self.state = "backUpAfterSweep"
+                self.targetAngularVelocity = 0.0
+                self.get_logger().info(f'sweeping ended')
+
+        if self.state ==  "backUpAfterSweep":
+            if(self.ultraSoundReadingFloat > 10):
+                self.get_logger().info(f'backing up within 10 centimeters of obstacle')
+                self.targetLinearVelocity = 0.02 #sets velocity
+            else:
                 self.end_recovery()
-   
+
     def end_recovery(self):
         self.targetAngularVelocity = 0.0
         self.radiansTravelled = 0.0
