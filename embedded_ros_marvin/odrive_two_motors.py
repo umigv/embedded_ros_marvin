@@ -127,9 +127,6 @@ class DualODriveController(Node):
             self.set_motor_rps(0.0, 0.0)
 
     def publish_enc_vel(self):
-        if not self.is_robot_enabled():
-            self.set_motor_rps(0.0, 0.0)
-
         left_motor_rps, right_motor_rps = self.get_motor_rps()
         linear_mps, angular_radps = self.config.motor_rps_to_twist(left_motor_rps, right_motor_rps)
 
