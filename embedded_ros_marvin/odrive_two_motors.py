@@ -98,7 +98,7 @@ class DualODriveController(Node):
         self.odrive_left = odrive.find_any(serial_number="395934763331")
         self.initialize_odrive(self.odrive_left)
 
-        self.odrive_right = odrive.find_any(serial_number="384934743539")
+        self.odrive_right = odrive.find_any(serial_number="396E34763331")
         self.initialize_odrive(self.odrive_right)
 
         self.subscription = self.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 10)
