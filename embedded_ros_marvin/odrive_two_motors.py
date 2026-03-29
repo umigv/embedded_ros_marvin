@@ -97,9 +97,10 @@ class DualODriveController(Node):
 
         self.odrive_left = odrive.find_any(serial_number="395934763331")
         self.initialize_odrive(self.odrive_left)
-
+        self.get_logger().info("found left odrive")
         self.odrive_right = odrive.find_any(serial_number="396E34763331")
         self.initialize_odrive(self.odrive_right)
+        self.get_logger().info("found right odrive")
 
         self.subscription = self.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 10)
 
@@ -149,9 +150,9 @@ class DualODriveController(Node):
     def is_robot_enabled(self) -> bool:
         try:
             with open(self.config.estop_file_path, "r") as f:
-                return f.read().strip() == "1" # yes, e-stop disabled is 1 in the file
+                return f.read().strip() != "1" # only "1" stops the robot, everything else is enabled
         except Exception:
-            return True # if the e-stop file doesn's exist / is corrupted we assume e-stop is off
+            return True # if the e-stop file doesn't exist / is corrupted we assume e-stop is off
 
 def main(args=None):
     rclpy.init(args=args)
