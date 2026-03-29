@@ -1,12 +1,14 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import TwistWithCovarianceStamped, Twist
+from std_msgs.msg import Bool
 import odrive
 from odrive.enums import (
     AXIS_STATE_CLOSED_LOOP_CONTROL,
     CONTROL_MODE_VELOCITY_CONTROL,
 )
 import math
+import time
 from dataclasses import dataclass
 
 @dataclass(frozen=True)
@@ -25,7 +27,7 @@ class DriveConfig:
     sample_time_s: float = 0.01
 
     # E-stop
-    estop_file_path: str = "/tmp/estop_value.txt"
+    estop_topic_timeout_s: float = 0.5
 
     # Dynamic covariance model (variance = floor + gain * f(speed)^2)
     linear_variance_gain: float = 0.0004
@@ -94,6 +96,8 @@ class DualODriveController(Node):
         super().__init__('dual_odrive_controller')
 
         self.config = DriveConfig()
+        self.estop_active = True
+        self.last_estop_msg_time: float | None = None
 
         self.odrive_left = odrive.find_any(serial_number="395934763331")
         self.initialize_odrive(self.odrive_left)
@@ -102,6 +106,7 @@ class DualODriveController(Node):
         self.initialize_odrive(self.odrive_right)
 
         self.subscription = self.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 10)
+        self.estop_subscription = self.create_subscription(Bool, 'estop', self.estop_callback, 10)
 
         self.publisher = self.create_publisher(TwistWithCovarianceStamped, 'enc_vel', 10)
         self.timer = self.create_timer(self.config.sample_time_s, self.publish_enc_vel)
@@ -113,6 +118,13 @@ class DualODriveController(Node):
         
         left_rps, right_rps = self.config.twist_to_motor_rps(msg.linear.x, msg.angular.z)
         self.set_motor_rps(left_rps, right_rps)
+
+    def estop_callback(self, msg: Bool) -> None:
+        self.estop_active = bool(msg.data)
+        self.last_estop_msg_time = time.monotonic()
+
+        if self.estop_active:
+            self.set_motor_rps(0.0, 0.0)
 
     def publish_enc_vel(self):
         left_motor_rps, right_motor_rps = self.get_motor_rps()
@@ -147,11 +159,14 @@ class DualODriveController(Node):
         return left_motor_rps, right_motor_rps
 
     def is_robot_enabled(self) -> bool:
-        try:
-            with open(self.config.estop_file_path, "r") as f:
-                return f.read().strip() == "1" # yes, e-stop disabled is 1 in the file
-        except Exception:
-            return True # if the e-stop file doesn's exist / is corrupted we assume e-stop is off
+        if self.last_estop_msg_time is None:
+            return False
+
+        estop_age_s = time.monotonic() - self.last_estop_msg_time
+        if estop_age_s > self.config.estop_topic_timeout_s:
+            return False
+
+        return not self.estop_active
 
 def main(args=None):
     rclpy.init(args=args)

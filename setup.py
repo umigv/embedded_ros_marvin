@@ -27,6 +27,7 @@ setup(
             "dual_odrive_controller = embedded_ros_marvin.odrive_two_motors:main",
             "LED_subscriber = embedded_ros_marvin.led_subscriber:main",
             "recovery_executable = embedded_ros_marvin.recovery_executable:main"
+            "estop = embedded_ros_marvin.estop_serial_node:main"
         ],
     },
 )
