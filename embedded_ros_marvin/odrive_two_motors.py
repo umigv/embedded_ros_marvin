@@ -24,7 +24,7 @@ class DriveConfig:
     gear_ratio: float = 98.0 / 3.0
 
     # Polarity (motor-native <-> robot-forward convention)
-    left_polarity: int = -1
+    left_polarity: int = 1
     right_polarity: int = 1
 
     # Sampling / encoder
