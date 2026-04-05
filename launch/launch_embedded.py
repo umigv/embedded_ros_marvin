@@ -20,15 +20,15 @@ def generate_launch_description():
         remappings=[('enc_vel', 'enc_vel/raw')],
     )
 
-    estop_node = launch_ros.actions.Node(
-        package='embedded_ros_marvin', 
-        executable='estop',
-        output='screen',
-    )
+    # estop_node = launch_ros.actions.Node(
+    #     package='embedded_ros_marvin', 
+    #     executable='estop',
+    #     output='screen',
+    # )
 
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument('use_LED', default_value='true', description="Enable LED node"),
         dual_odrive_controller_node,
         led_node,
-        estop_node,
+        # estop_node,
     ])
