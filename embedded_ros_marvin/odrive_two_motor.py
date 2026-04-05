@@ -12,7 +12,14 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class DriveConfig:
     # Geometry / drivetrain
-    track_width_m: float = 0.724
+    
+    #Marvin:
+    #track_width_m: float = 0.724
+    
+    #Maverick:
+    track_width_m: float = 0.74295
+    
+    
     wheel_diameter_m: float = 0.181356
     gear_ratio: float = 98.0 / 3.0
 
@@ -95,10 +102,21 @@ class DualODriveController(Node):
 
         self.config = DriveConfig()
 
-        self.odrive_left = odrive.find_any(serial_number="395934763331")
+	#Marvin:
+        #self.odrive_left = odrive.find_any(serial_number="395934763331")
+        
+        #Maverick:
+        self.odrive_left = odrive.find_any(serial_number="395534753331")
+        
         self.initialize_odrive(self.odrive_left)
         self.get_logger().info("found left odrive")
-        self.odrive_right = odrive.find_any(serial_number="396E34763331")
+        
+        #Marvin:
+        #self.odrive_right = odrive.find_any(serial_number="396E34763331")
+        
+        #Maverick:
+        self.odrive_right = odrive.find_any(serial_number="384934743539")
+        
         self.initialize_odrive(self.odrive_right)
         self.get_logger().info("found right odrive")
 
