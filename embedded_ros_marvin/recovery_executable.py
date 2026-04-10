@@ -59,25 +59,29 @@ class RecoveryExecutable(Node):
         if self.arduino is None:
             return
 
-        if self.arduino.in_waiting > 0:
-            packet = self.arduino.readline()
-            ultraSoundReadingString = packet.decode('utf-8', errors='ignore').rstrip('\n')
-            try:
-                raw_reading = float(ultraSoundReadingString)
-                # Add raw reading to history and keep only last 5 values
-                self.ultraSoundReadingHistory.append(raw_reading)
-                if len(self.ultraSoundReadingHistory) > 5:
-                    self.ultraSoundReadingHistory.pop(0)
-               
-                # Use median of the last 5 readings (or fewer if not yet at 5)
-                self.ultraSoundReadingFloat = median(self.ultraSoundReadingHistory)
-               
-                if self.state == "BeginRecovery":
-                    self.state = "temp"
-                    self.begin_recovery()
-            except:
-                self.get_logger().info("not reading ultrasound values")
+        try:
+            if self.arduino.in_waiting > 0:
+                packet = self.arduino.readline()
+                ultraSoundReadingString = packet.decode('utf-8', errors='ignore').rstrip('\n')
+                try:
+                    raw_reading = float(ultraSoundReadingString)
+                    self.ultraSoundReadingHistory.append(raw_reading)
+                    if len(self.ultraSoundReadingHistory) > 5:
+                        self.ultraSoundReadingHistory.pop(0)
+                    self.ultraSoundReadingFloat = median(self.ultraSoundReadingHistory)
+                    if self.state == "BeginRecovery":
+                        self.state = "temp"
+                        self.begin_recovery()
+                except:
+                    self.get_logger().info("not reading ultrasound values")
 
+        except OSError as e:
+            self.get_logger().error(f"Arduino disconnected: {e}")
+            self.arduino = None
+            if self.state != "NoPublishing":
+                self.get_logger().info("Calling end_recovery due to Arduino disconnect")
+                self.end_recovery()
+                
     def listener_callback(self, msg): #Note from Hannah & Ash: How does msg variable work, and does it conflict with msg var in twist?
         if msg.data == 'recovery':
             self.state = "BeginRecovery"
