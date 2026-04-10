@@ -122,6 +122,7 @@ class RecoveryExecutable(Node):
         if self.state != "beginSweep" and self.state != "flipDirectionSweep" and self.state != "backUpAfterSweep":
             return
         if self.ultraSoundReadingFloat >= 40:
+            self.targetAngularVelocity = 0.0
             self.state = "beginBackUp"
         elif self.state == "beginSweep":
             self.get_logger().info(f'sweeping counterclockwise')
@@ -146,6 +147,7 @@ class RecoveryExecutable(Node):
             if(self.ultraSoundReadingFloat > 10):
                 self.get_logger().info(f'backing up within 10 centimeters of obstacle')
                 self.targetLinearVelocity = 0.02 #sets velocity
+                self.targetAngularVelocity = 0.0
             else:
                 self.end_recovery()
 
