@@ -12,25 +12,32 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class DriveConfig:
     # Geometry / drivetrain
-    track_width_m: float = 0.724
+    
+    #Marvin:
+    #track_width_m: float = 0.724
+    
+    #Maverick:
+    track_width_m: float = 0.74295
+    
+    
     wheel_diameter_m: float = 0.181356
     gear_ratio: float = 98.0 / 3.0
 
     # Polarity (motor-native <-> robot-forward convention)
-    left_polarity: int = -1
+    left_polarity: int = 1
     right_polarity: int = 1
 
     # Sampling / encoder
     encoder_counts_per_motor_rev: int = 42
-    sample_time_s: float = 0.02
+    sample_time_s: float = 0.01
 
     # E-stop
     estop_file_path: str = "/tmp/estop_value.txt"
 
     # Dynamic covariance model (variance = floor + gain * f(speed)^2)
-    linear_variance_gain: float = 0.004
+    linear_variance_gain: float = 0.0004
     min_linear_variance: float = 1e-6
-    angular_variance_gain: float = 0.003
+    angular_variance_gain: float = 0.0004
     min_angular_variance: float = 1e-6
 
     @property
@@ -61,7 +68,9 @@ class DriveConfig:
 
     def twist_covariance(self, linear_mps: float, angular_radps: float) -> list[float]:
         linear_variance_dynamic = self.linear_variance_gain * (linear_mps ** 2)
-        angular_variance_dynamic = self.angular_variance_gain * (angular_radps ** 2)
+        angular_variance_dynamic = self.angular_variance_gain * (
+            linear_mps ** 2 / self.track_width_m ** 2 + angular_radps ** 2
+        )
 
         linear_variance = max(self.min_linear_variance, self.linear_variance_static + linear_variance_dynamic)
         angular_variance = max(self.min_angular_variance, self.angular_variance_static + angular_variance_dynamic)
@@ -93,11 +102,23 @@ class DualODriveController(Node):
 
         self.config = DriveConfig()
 
-        self.subscription = self.create_subscription(
-            Twist, 'joy_cmd_vel', self.cmd_vel_callback, 10)
-
-        # Publisher for encoder velocities with covariance
-        self.publisher = self.create_publisher(TwistWithCovarianceStamped, 'enc_vel', 10)
+	#Marvin:
+        #self.odrive_left = odrive.find_any(serial_number="395934763331")
+        
+        #Maverick:
+        self.odrive_left = odrive.find_any(serial_number="395534753331")
+        
+        self.initialize_odrive(self.odrive_left)
+        self.get_logger().info("found left odrive")
+        
+        #Marvin:
+        #self.odrive_right = odrive.find_any(serial_number="396E34763331")
+        
+        #Maverick:
+        self.odrive_right = odrive.find_any(serial_number="384934743539")
+        
+        self.initialize_odrive(self.odrive_right)
+        self.get_logger().info("found right odrive")
 
         self.subscription = self.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 10)
 
@@ -153,6 +174,25 @@ class DualODriveController(Node):
         # Publish the message
         self.publisher.publish(msg)
 
+    def initialize_odrive(self, odrive) -> None:
+        odrive.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+        odrive.axis0.controller.config.control_mode = CONTROL_MODE_VELOCITY_CONTROL
+
+    def set_motor_rps(self, left_motor_rps: float, right_motor_rps: float) -> None:
+        self.odrive_left.axis0.controller.input_vel = left_motor_rps * self.config.left_polarity
+        self.odrive_right.axis0.controller.input_vel = right_motor_rps * self.config.right_polarity
+
+    def get_motor_rps(self) -> tuple[float, float]:
+        left_motor_rps = self.odrive_left.axis0.vel_estimate * self.config.left_polarity
+        right_motor_rps = self.odrive_right.axis0.vel_estimate * self.config.right_polarity
+        return left_motor_rps, right_motor_rps
+
+    def is_robot_enabled(self) -> bool:
+        try:
+            with open(self.config.estop_file_path, "r") as f:
+                return f.read().strip() != "1" # only "1" stops the robot, everything else is enabled
+        except Exception:
+            return True # if the e-stop file doesn't exist / is corrupted we assume e-stop is off
 
 def main(args=None):
     rclpy.init(args=args)
