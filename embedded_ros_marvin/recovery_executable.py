@@ -13,6 +13,9 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from statistics import median
 
 recovery_executable = None
+ANGULAR_VELOCITY = 0.3 #radians per second, which is about 57 degrees per second
+THRESHOLD_DISTANCE = 60 #centimeters
+BACKUP_AFTER_SWEEP_VELOCITY = 0.1 #m/s
 
 class RecoveryExecutable(Node):
     def __init__(self):
@@ -36,7 +39,7 @@ class RecoveryExecutable(Node):
         self.ultraSoundReadingHistory = []  # Store last 5 readings for median filter
         self.targetLinearVelocity = 0.0 #m/s???
         self.targetAngularVelocity = 0.0 #rad/s???
-        self.targetPosition = 0.30 #meters
+        self.targetPosition = 0.50 #meters
         self.distanceTraveled = 0.0
         self.proportional = 0.333
         self.radiansTravelled = 0.0
@@ -121,14 +124,14 @@ class RecoveryExecutable(Node):
         #self.get_logger().info(f'sweeping function called')
         if self.state != "beginSweep" and self.state != "flipDirectionSweep" and self.state != "backUpAfterSweep":
             return
-        if self.ultraSoundReadingFloat >= 40:
+        if self.ultraSoundReadingFloat >= THRESHOLD_DISTANCE:
             self.targetAngularVelocity = 0.0
             self.state = "beginBackUp"
         elif self.state == "beginSweep":
             self.get_logger().info(f'sweeping counterclockwise')
             if self.radiansTravelled < 0.349066:#sweeps 20 degrees one direction
             #sweeps left pi/2 radians or 90 degrees one way at a speed of pi/9 radians per second
-                self.targetAngularVelocity = math.pi / 9
+                self.targetAngularVelocity = ANGULAR_VELOCITY
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             else: 
                 self.state = "flipDirectionSweep"
@@ -136,7 +139,7 @@ class RecoveryExecutable(Node):
             if self.radiansTravelled > -0.349066:
                 self.get_logger().info(f'sweeping clockwise')
 
-                self.targetAngularVelocity = -1 * math.pi / 9
+                self.targetAngularVelocity = -1 * ANGULAR_VELOCITY
                 self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
             else:
                 self.state = "backUpAfterSweep"
@@ -146,7 +149,7 @@ class RecoveryExecutable(Node):
         if self.state ==  "backUpAfterSweep":
             if(self.ultraSoundReadingFloat > 10):
                 self.get_logger().info(f'backing up within 10 centimeters of obstacle')
-                self.targetLinearVelocity = 0.02 #sets velocity
+                self.targetLinearVelocity = BACKUP_AFTER_SWEEP_VELOCITY #sets velocity
                 self.targetAngularVelocity = 0.0
             else:
                 self.end_recovery()
@@ -168,7 +171,7 @@ class RecoveryExecutable(Node):
         # self.publisher_Boolean.publish(boolmsg)
 
     def begin_recovery(self):
-        if self.ultraSoundReadingFloat >= 40.0:
+        if self.ultraSoundReadingFloat >= THRESHOLD_DISTANCE:
             self.state = "beginBackUp"
             self.targetAngularVelocity = 0.0
 
