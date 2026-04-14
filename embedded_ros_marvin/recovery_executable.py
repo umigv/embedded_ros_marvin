@@ -68,10 +68,12 @@ class RecoveryExecutable(Node):
                 ultraSoundReadingString = packet.decode('utf-8', errors='ignore').rstrip('\n')
                 try:
                     raw_reading = float(ultraSoundReadingString)
-                    self.ultrasoundReadingHistory.append(raw_reading)
-                    if len(self.ultrasoundReadingHistory) > 5:
-                        self.ultrasoundReadingHistory.pop(0)
-                    self.ultrasoundReading = median(self.ultrasoundReadingHistory)
+                    #Mean value filter, I do not think we need this and it slows down the response to the arduino readings
+                    # self.ultrasoundReadingHistory.append(raw_reading)
+                    # if len(self.ultrasoundReadingHistory) > 5:
+                    #     self.ultrasoundReadingHistory.pop(0)
+                    # self.ultrasoundReading = median(self.ultrasoundReadingHistory)
+                    self.ultrasoundReading = raw_reading
                 except:
                     self.get_logger().info("not reading ultrasound values")
 
