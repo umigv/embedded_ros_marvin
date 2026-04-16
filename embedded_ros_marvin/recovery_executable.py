@@ -24,7 +24,7 @@ class RecoveryExecutable(Node):
     def __init__(self):
         super().__init__('recovery_executable')
         self.publisher_Twist = self.create_publisher(Twist, 'recovery_cmd_vel', 10)
-        self.timer_period = 0.5  # seconds
+        self.timer_period = 0.2  # seconds
         self.velocity_publishing_timer = self.create_timer(self.timer_period, self.velocity_publishing)
         self.back_up_velocity_timer = self.create_timer(self.timer_period, self.set_velocity_from_error)
         self.sweep_timer = self.create_timer(self.timer_period, self.sweep_left_and_right)
@@ -61,29 +61,25 @@ class RecoveryExecutable(Node):
     def updateArduinoReading(self):
         if self.arduino is None:
             return
-
         try:
-            if self.arduino.in_waiting > 0:
+            latest = None
+            while self.arduino.in_waiting > 0:
                 packet = self.arduino.readline()
-                ultraSoundReadingString = packet.decode('utf-8', errors='ignore').rstrip('\n')
+                latest = packet  # keep overwriting — only the last matters
+            if latest:
+                reading_str = latest.decode('utf-8', errors='ignore').strip()
                 try:
-                    raw_reading = float(ultraSoundReadingString)
-                    #Mean value filter, I do not think we need this and it slows down the response to the arduino readings
-                    # self.ultrasoundReadingHistory.append(raw_reading)
-                    # if len(self.ultrasoundReadingHistory) > 5:
-                    #     self.ultrasoundReadingHistory.pop(0)
-                    # self.ultrasoundReading = median(self.ultrasoundReadingHistory)
-                    self.ultrasoundReading = raw_reading
-                except:
+                    self.ultrasoundReading = float(reading_str)
+                except ValueError:
                     self.get_logger().info("not reading ultrasound values")
-
+        
         except OSError as e:
             self.get_logger().error(f"Arduino disconnected: {e}")
             self.arduino = None
             if self.state != "NoPublishing":
                 self.get_logger().info("Calling end_recovery due to Arduino disconnect")
                 self.end_recovery()
-                
+                    
     def listener_callback(self, msg): 
         if msg.data == 'recovery':
             self.begin_recovery()
@@ -134,7 +130,7 @@ class RecoveryExecutable(Node):
             #turn one direction until radians travelled exceeds the max distance, then set state to flip direction
             if self.radiansTravelled < MAX_ANGULAR_SWEEP_DISTANCE:
                 self.targetAngularVelocity = ANGULAR_VELOCITY
-                self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
+                self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * self.timer_period)
             else: 
                 self.state = "flipDirectionSweep"
         elif self.state == "flipDirectionSweep":
@@ -142,7 +138,7 @@ class RecoveryExecutable(Node):
             if self.radiansTravelled > -MAX_ANGULAR_SWEEP_DISTANCE:
                 self.get_logger().info(f'sweeping clockwise')
                 self.targetAngularVelocity = -1 * ANGULAR_VELOCITY
-                self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * 0.5)
+                self.radiansTravelled = self.radiansTravelled + (self.targetAngularVelocity * self.timer_period)
             #If we have reached the max angular distance allowed in both directions without finding a point with large clearance, start backing up. 
             # backup will continue until the reading is less than the backup allowance
             else:
