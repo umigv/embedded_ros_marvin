@@ -127,6 +127,7 @@ class DualODriveController(Node):
 
     def cmd_vel_callback(self, msg):
         if not self.is_robot_enabled():
+            self.get_logger().warn("Robot disabled")
             self.set_motor_rps(0.0, 0.0)
             return
         
