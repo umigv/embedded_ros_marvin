@@ -13,12 +13,12 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy, QoSDur
 from statistics import median
 
 recovery_executable = None
-ANGULAR_VELOCITY = 0.3 #radians per second
-MAX_ANGULAR_SWEEP_DISTANCE = 0.349066 #radians
+ANGULAR_VELOCITY = 2.0 #radians per second
+MAX_ANGULAR_SWEEP_DISTANCE = 3.0 #0.349066 #radians
 THRESHOLD_DISTANCE = 60 #centimeters, distance needed to start backing up
-MAX_BACKUP_DISTANCE = 0.50 #meters
+MAX_BACKUP_DISTANCE = 1 #meters
 BACKUP_ALLOWANCE = 15 #centimeters, if the ultrasound reader reads less than this, the robot stops backing up and ends recovery
-PROPORTIONAL = 0.333 #the p term for the fake p loop 
+PROPORTIONAL = 1.0 #the p term for the fake p loop 
 
 class RecoveryExecutable(Node):
     def __init__(self):
@@ -68,7 +68,7 @@ class RecoveryExecutable(Node):
                 latest = packet  # keep overwriting — only the last matters
             if latest:
                 reading_str = latest.decode('utf-8', errors='ignore').strip()
-                try:
+                try:                    
                     self.ultrasoundReading = float(reading_str)
                 except ValueError:
                     self.get_logger().info("not reading ultrasound values")
