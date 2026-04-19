@@ -13,15 +13,20 @@ from dataclasses import dataclass
 class DriveConfig:
     # Geometry / drivetrain
     
-    #Marvin:
+    # Marvin:
     #track_width_m: float = 0.724
     
-    #Maverick:
+    # Maverick:
     track_width_m: float = 0.74295
     
     
     wheel_diameter_m: float = 0.181356
-    gear_ratio: float = 98.0 / 3.0
+
+    # Marvin
+    #gear_ratio: float = 98.0 / 3.0
+
+    # Maverick:
+    gear_ratio: float = 170.0 / 9.0
 
     # Polarity (motor-native <-> robot-forward convention)
     left_polarity: int = 1
@@ -125,6 +130,9 @@ class DualODriveController(Node):
         self.publisher = self.create_publisher(TwistWithCovarianceStamped, 'enc_vel', 10)
         self.timer = self.create_timer(self.config.sample_time_s, self.publish_enc_vel)
 
+        self.left_motor_rotation = 0.0
+        self.right_motor_rotation = 0.0
+
     def cmd_vel_callback(self, msg):
         if not self.is_robot_enabled():
             self.get_logger().warn("Robot disabled")
@@ -136,6 +144,12 @@ class DualODriveController(Node):
 
     def publish_enc_vel(self):
         left_motor_rps, right_motor_rps = self.get_motor_rps()
+
+        # self.left_motor_rotation += left_motor_rps * self.config.sample_time_s / self.config.gear_ratio
+        # self.right_motor_rotation += right_motor_rps * self.config.sample_time_s / self.config.gear_ratio
+
+        # self.get_logger().info(f"Left motor rotation: {self.left_motor_rotation:.2f}, Right motor rotation: {self.right_motor_rotation:.2f}")
+
         linear_mps, angular_radps = self.config.motor_rps_to_twist(left_motor_rps, right_motor_rps)
 
         msg = TwistWithCovarianceStamped()
