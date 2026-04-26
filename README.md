@@ -1,96 +1,93 @@
 # embedded_ros_marvin
 
-## Key Project Structrure
+## Project structure
 ```
-├── embedded_ros_marvin/              # Source folder containing ROS 2 node implementations
-│   ├── led_subscriber.py             # Subscribe to /is_auto and control safety light LED
-│   ├── odrive_two_motors.py          # Subscribe to /joy_cmd_vel, control the odrives and publish /enc_vel/raw
-│   └── recovery_executable.py        # Subscribe to /state and call /state/set_recovery, controls recovery and publish /recovery_cmd_vel
-├── launch/                           
-│   └── launch_embedded.py            # Launches embedded nodes
-├── sdr_estop/                        
-│   ├── estopnew.grc                  # GNU radio flowgraph
-│   └── estop.py                      # Auto generated python code from flowgraph
-│   └── estop_epy_block_3.py          # Embedded python block for integer toggle
+├── embedded_ros_marvin/              # ROS 2 node implementations
+│   ├── odrive_two_motors.py          # /cmd_vel → ODrives; publishes /enc_vel/raw (TwistWithCovarianceStamped)
+│   ├── led_subscriber.py             # Drives safety-light LED based on estop / teleop / autonomy state
+│   └── recovery_executable.py        # /state-driven recovery; publishes /recovery_cmd_vel
+├── launch/
+│   └── launch_embedded.py            # Launches dual_odrive_controller + LED_subscriber
+├── sdr_estop/
+│   ├── estopnew.grc                  # GNU Radio flowgraph for remote estop receiver
+│   ├── estop.py                      # Auto-generated Python from the flowgraph
+│   └── estop_epy_block_*.py          # Embedded Python blocks (integer toggle, etc.)
 ```
+
+The estop flowgraph writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
 
 ---
 
-## **To run the robot for 2025 competition**
-### **1. Motor Calibration**
-- Make sure power switch is on and physical estop is unpressed
-- Type `odrivetool` in a new terminal
-- odrv0 and odrv1 should both be connected. If not, check USB connection and optionally restart computer.
-- Type `odrv0.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE` to calibrate odrv0
-    - You should hear a beeping sound when calibration starts. If not, check if odrive indicator light is red. If yes, type `odrv0.clear_errors()`
-    - During calibration, the light should flash green. When calibration completes, light will flash blue.
-- Do the same for odrv1
-    - When robot is on test stand, you can calibrate both odrives at the same time. When on the ground, calibrate one at a time.
-- Exit odrivetool by typing `quit()`
-- If odrive errors during runtime, enter odrivetool and type `odrv0.clear_errors()`, `odrv1.clear_errors()`
-    - If error persists and odrive still flash red, double check if power is on and physical estop is unpressed
+## To run the robot for the 2026 competition
 
-### **2. Launch Emedded Nodes**
-- Type `ros2 launch embedded_ros_marvin launch_embedded.py`. Make sure to quit odrivetool first
-- Odrive indicator lights should now flash green
+### 1. Motor calibration
+- Make sure the power switch is on and the physical estop is unpressed.
+- In a new terminal: `odrivetool`
+- `odrv0` and `odrv1` should both connect. If not, check USB and (if needed) reboot the computer.
+- `odrv0.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE`
+  - You should hear beeping. If the indicator light is red instead, run `odrv0.clear_errors()` first.
+  - Light flashes green during calibration, blue when done.
+- Repeat for `odrv1`.
+  - On the test stand you can calibrate both at once. On the ground, do them one at a time.
+- `quit()` to exit.
+- If an ODrive errors at runtime, re-enter `odrivetool` and run `odrv0.clear_errors()` / `odrv1.clear_errors()`. If errors persist, re-check power and the physical estop.
 
-### **3. To start remote estop**
-- Open estopnew.grc located in the sdr_estop folder
-- Run the flowgraph 
+### 2. Start the remote estop (as backup estop method)
+- Open [sdr_estop/estopnew.grc](sdr_estop/estopnew.grc) in GNU Radio Companion and run the flowgraph.
+- Notes:
+  - Restarting the flowgraph resets the estop value to `1` (no estop).
+  - If the flowgraph is never started, the estop file may not exist — the embedded nodes treat that as **no estop** (robot enabled).
 
-#### Notes
-
-- Restarting the flowgraph will default estop value to 1 (no estop).
-
-- If estop flowgraph is not ran, estop value will be default to 1 (no estop).
-
----
-
-## **Launch Files**
-
-### **1. Launch Embedded Nodes**
-This launch file starts the odrive controller node. Make sure to first run motor calibration (but no need to set to closed loop control).
-
+### 3. Launch the embedded nodes
+Make sure `odrivetool` is closed first (it holds the USB connection).
 ```sh
 ros2 launch embedded_ros_marvin launch_embedded.py
 ```
+ODrive indicator lights should now flash green.
 
-#### **Parameters:**
-- **`use_LED`** (default: `true`)
-  - If `false`, the LED subscriber node will be disabled.
+### 4. Launch the recovery executable
+`recovery_executable` is **not** included in `launch_embedded.py` — start it in its own terminal when running autonomy:
+```sh
+ros2 run embedded_ros_marvin recovery_executable
+```
+It waits on the `state/set_recovery` service, so bring up the autonomy stack first.
 
 ---
 
-## Setup for indicator LED on a new device
+## Nodes
 
-### 1. Create a udev rule file
+### `dual_odrive_controller` ([odrive_two_motors.py](embedded_ros_marvin/odrive_two_motors.py))
+- **Sub:** `cmd_vel` (`geometry_msgs/Twist`)
+- **Pub:** `enc_vel/raw` (`geometry_msgs/TwistWithCovarianceStamped`) — remapped from `enc_vel` in the launch file
+- Reads `/tmp/estop_value.txt`; commands zero velocity while estopped.
 
-Run the following command to open the rule file:
-```bash
-sudo nano /etc/udev/rules.d/99-arduino.rules
-```
+### `LED_subscriber` ([led_subscriber.py](embedded_ros_marvin/led_subscriber.py))
 
-### 2. Add the following rule
+| Priority | Source | Code |
+|---|---|---|
+| 1 | `/tmp/estop_value.txt` is `"1"` | `6` |
+| 2 | `teleop_cmd_vel` (`geometry_msgs/Twist`) message in the last 1 s | `1` |
+| 3 | `state` = `normal` | `2` |
+| 3 | `state` = `no_mans_land` | `3` |
+| 3 | `state` = `recovery` | `4` |
 
-Copy and paste this line into the file:
-```bash
-SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0042", ATTRS{serial}=="557363130383514121D2", SYMLINK+="LED_Arduino", MODE="0666"
-```
 
-### 3. Reboot the system
+### `recovery_executable` ([recovery_executable.py](embedded_ros_marvin/recovery_executable.py))
+- **Sub:** `state` (`std_msgs/String`)
+- **Pub:** `recovery_cmd_vel` (`geometry_msgs/Twist`)
+- **Service client:** `state/set_recovery` (`std_srvs/SetBool`)
 
-### Notes
+---
 
-- To get the `idVendor` and `idProduct`, run:
-  ```bash
-  lsusb
-  ```
-- To get the serial number (optional), make sure the device is connected to `ACM0`, then run:
-  ```bash
-  udevadm info -a -n /dev/ttyACM0 | grep 'ATTRS{serial}'
+## Launch parameters
+
+`launch_embedded.py`:
+- **`use_LED`** (default `true`) — set to `false` to skip the LED node, e.g. when the LED Arduino isn't connected.
+  ```sh
+  ros2 launch embedded_ros_marvin launch_embedded.py use_LED:=false
   ```
 
 ---
 
-## Wireless access point password:
-Password: `64182087`
+## Wireless access point password
+`64182087`
