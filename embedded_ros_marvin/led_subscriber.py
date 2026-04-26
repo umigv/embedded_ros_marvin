@@ -22,15 +22,16 @@ LED_STATE = {
 class LEDSubscriber(Node):
     def __init__(self):
         super().__init__('LED_subscriber')
-
+        self.get_logger().info("Ryan was here")
         self.create_subscription(Twist, 'teleop_cmd_vel', self.teleop_callback, 10)
         self.create_subscription(String, 'state', self.state_callback, 10)
 
         self.last_teleop_time = None
         self.current_state = None
         self.last_sent = None
+        self.start_time = self.get_clock().now()
 
-        self.serial_symlink = "/dev/LED_Arduino"
+        self.serial_symlink = "/dev/led"
         try:
             self.serial_port_path = os.path.realpath(self.serial_symlink)
             self.serial_port = serial.Serial(self.serial_port_path, baudrate=9600, timeout=1)
@@ -68,16 +69,21 @@ class LEDSubscriber(Node):
         elif self.current_state in LED_STATE:
             value = LED_STATE[self.current_state]
         else:
-            return
+            value = 9
 
         self.send_to_arduino(value)
 
     def send_to_arduino(self, value: int):
         if not (self.serial_port and self.serial_port.is_open):
             return
+        
+        uptime = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
+        if uptime < 3.0:
+            return
+
         try:
-            self.serial_port.write(f"{value}\n".encode())
             if value != self.last_sent:
+                self.serial_port.write(f"{value}\n".encode())
                 self.get_logger().info(f"Sent to Arduino: {value}")
                 self.last_sent = value
         except serial.SerialException as e:

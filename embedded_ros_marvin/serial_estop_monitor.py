@@ -1,7 +1,7 @@
 import os
 import serial
 
-SERIAL_PORT = "/dev/ttyS3"
+SERIAL_PORT = "/dev/estop"
 BAUD_RATE = 9600
 TARGET_FILE = "/tmp/estop_value.txt"
 TEMP_FILE = "/tmp/estop_value.tmp"
