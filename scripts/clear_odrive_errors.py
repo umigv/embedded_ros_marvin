@@ -14,6 +14,7 @@ def clear_odrive_errors(serial_number: str) -> None:
 def main():
     clear_odrive_errors("395534753331")  # Left
     clear_odrive_errors("384934743539")  # Right
+    print("Make sure they are not flashing red")
 
 
 if __name__ == "__main__":
