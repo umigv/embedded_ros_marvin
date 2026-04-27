@@ -4,11 +4,13 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Twist
 import serial
 import os
+import time
 
 
 ESTOP_FILE_PATH = "/tmp/estop_value.txt"
 TELEOP_TIMEOUT_SEC = 1.0
 TICK_PERIOD_SEC = 0.1
+ARDUINO_READY_TIMEOUT_SEC = 5.0
 
 LED_ESTOP = 6
 LED_TELEOP = 1
@@ -29,18 +31,31 @@ class LEDSubscriber(Node):
         self.last_teleop_time = None
         self.current_state = None
         self.last_sent = None
-        self.start_time = self.get_clock().now()
+        self.arduino_ready = False
 
         self.serial_symlink = "/dev/led"
         try:
             self.serial_port_path = os.path.realpath(self.serial_symlink)
             self.serial_port = serial.Serial(self.serial_port_path, baudrate=9600, timeout=1)
             self.get_logger().info(f"Connected to Arduino on {self.serial_symlink} → {self.serial_port_path}")
+            self.wait_for_arduino_ready()
         except serial.SerialException as e:
             self.get_logger().error(f"Failed to connect to Arduino: {e}")
             self.serial_port = None
 
         self.create_timer(TICK_PERIOD_SEC, self.tick)
+
+    def wait_for_arduino_ready(self):
+        deadline = time.monotonic() + ARDUINO_READY_TIMEOUT_SEC
+        while time.monotonic() < deadline:
+            line = self.serial_port.readline().decode(errors="ignore").strip()
+            if line == "READY":
+                self.arduino_ready = True
+                self.get_logger().info("Arduino reported READY")
+                return
+        raise RuntimeError(
+            f"Did not see READY from Arduino within {ARDUINO_READY_TIMEOUT_SEC}s"
+        )
 
     def teleop_callback(self, msg):
         self.last_teleop_time = self.get_clock().now()
@@ -76,9 +91,7 @@ class LEDSubscriber(Node):
     def send_to_arduino(self, value: int):
         if not (self.serial_port and self.serial_port.is_open):
             return
-        
-        uptime = (self.get_clock().now() - self.start_time).nanoseconds / 1e9
-        if uptime < 3.0:
+        if not self.arduino_ready:
             return
 
         try:
