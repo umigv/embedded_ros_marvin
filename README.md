@@ -42,12 +42,12 @@ The estop writes the current estop state into `/tmp/estop_value.txt` (`"1"` = es
 ### 3. Launch the embedded nodes
 Make sure `odrivetool` is closed first (it holds the USB connection).
 ```sh
-ros2 launch embedded_ros_marvin launch_embedded.py
+ros2 launch embedded_ros_marvin embedded.launch.py
 ```
 ODrive indicator lights should now flash green.
 
 ### 4. Launch the recovery executable
-`recovery_executable` is **not** included in `launch_embedded.py` — start it in its own terminal when running autonomy:
+`recovery_executable` is **not** included in `embedded.launch.py` — start it in its own terminal when running autonomy:
 ```sh
 ros2 run embedded_ros_marvin recovery_executable
 ```
