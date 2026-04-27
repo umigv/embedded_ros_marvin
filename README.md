@@ -30,7 +30,11 @@ The estop flowgraph writes the current estop state into `/tmp/estop_value.txt` (
 - Repeat for `odrv1`.
   - On the test stand you can calibrate both at once. On the ground, do them one at a time.
 - `quit()` to exit.
-- If an ODrive errors at runtime, re-enter `odrivetool` and run `odrv0.clear_errors()` / `odrv1.clear_errors()`. If errors persist, re-check power and the physical estop.
+- If an ODrive errors at runtime, run
+```
+python3 scripts/clear_odrive_errors.py
+```
+If errors persist, re-check power and the physical estop.
 
 ### 2. Start the remote estop (as backup estop method)
 - Open [sdr_estop/estopnew.grc](sdr_estop/estopnew.grc) in GNU Radio Companion and run the flowgraph.
