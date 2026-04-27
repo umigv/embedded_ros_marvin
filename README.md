@@ -5,16 +5,17 @@
 ├── embedded_ros_marvin/              # ROS 2 node implementations
 │   ├── odrive_two_motors.py          # /cmd_vel → ODrives; publishes /enc_vel/raw (TwistWithCovarianceStamped)
 │   ├── led_subscriber.py             # Drives safety-light LED based on estop / teleop / autonomy state
+│   ├── serial_estop_monitor.py       # Monitors remote estop state and write to /tmp/estop_value.txt
 │   └── recovery_executable.py        # /state-driven recovery; publishes /recovery_cmd_vel
 ├── launch/
-│   └── launch_embedded.py            # Launches dual_odrive_controller + LED_subscriber
+│   └── embedded.launch.py            # Launches dual_odrive_controller + LED_subscriber + serial_estop_monitor
 ├── sdr_estop/
 │   ├── estopnew.grc                  # GNU Radio flowgraph for remote estop receiver
 │   ├── estop.py                      # Auto-generated Python from the flowgraph
 │   └── estop_epy_block_*.py          # Embedded Python blocks (integer toggle, etc.)
 ```
 
-The estop flowgraph writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
+The estop writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
 
 ---
 
@@ -61,6 +62,7 @@ It waits on the `state/set_recovery` service, so bring up the autonomy stack fir
 - **Pub:** `enc_vel/raw` (`geometry_msgs/TwistWithCovarianceStamped`) — remapped from `enc_vel` in the launch file
 - Reads `/tmp/estop_value.txt`; commands zero velocity while estopped.
 
+
 ### `LED_subscriber` ([led_subscriber.py](embedded_ros_marvin/led_subscriber.py))
 
 | Priority | Source | Code |
@@ -77,17 +79,6 @@ It waits on the `state/set_recovery` service, so bring up the autonomy stack fir
 - **Pub:** `recovery_cmd_vel` (`geometry_msgs/Twist`)
 - **Service client:** `state/set_recovery` (`std_srvs/SetBool`)
 
----
-
-## Launch parameters
-
-`launch_embedded.py`:
-- **`use_LED`** (default `true`) — set to `false` to skip the LED node, e.g. when the LED Arduino isn't connected.
-  ```sh
-  ros2 launch embedded_ros_marvin launch_embedded.py use_LED:=false
-  ```
-
----
 
 ## Wireless access point password
 `64182087`

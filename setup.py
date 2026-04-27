@@ -26,7 +26,8 @@ setup(
         'console_scripts': [
             "dual_odrive_controller = embedded_ros_marvin.odrive_two_motors:main",
             "LED_subscriber = embedded_ros_marvin.led_subscriber:main",
-            "recovery_executable = embedded_ros_marvin.recovery_executable:main"
+            "recovery_executable = embedded_ros_marvin.recovery_executable:main",
+            "serial_estop_monitor = embedded_ros_marvin.serial_estop_monitor:run_estop_monitor",
         ],
     },
 )
