@@ -12,20 +12,8 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class DriveConfig:
     # Geometry / drivetrain
-    
-    # Marvin:
-    #track_width_m: float = 0.724
-    
-    # Maverick:
-    track_width_m: float = 0.74295
-    
-    
-    wheel_diameter_m: float = 0.181356
-
-    # Marvin
-    #gear_ratio: float = 98.0 / 3.0
-
-    # Maverick:
+    track_width_m: float = 0.764  
+    wheel_diameter_m: float = 0.18423
     gear_ratio: float = 170.0 / 9.0
 
     # Polarity (motor-native <-> robot-forward convention)
@@ -107,21 +95,11 @@ class DualODriveController(Node):
 
         self.config = DriveConfig()
 
-	#Marvin:
-        #self.odrive_left = odrive.find_any(serial_number="395934763331")
-        
-        #Maverick:
         self.odrive_left = odrive.find_any(serial_number="395534753331")
-        
         self.initialize_odrive(self.odrive_left)
         self.get_logger().info("found left odrive")
         
-        #Marvin:
-        #self.odrive_right = odrive.find_any(serial_number="396E34763331")
-        
-        #Maverick:
         self.odrive_right = odrive.find_any(serial_number="384934743539")
-        
         self.initialize_odrive(self.odrive_right)
         self.get_logger().info("found right odrive")
 
@@ -145,11 +123,10 @@ class DualODriveController(Node):
     def publish_enc_vel(self):
         left_motor_rps, right_motor_rps = self.get_motor_rps()
 
-        # self.left_motor_rotation += left_motor_rps * self.config.sample_time_s / self.config.gear_ratio
-        # self.right_motor_rotation += right_motor_rps * self.config.sample_time_s / self.config.gear_ratio
+        self.left_motor_rotation += left_motor_rps * self.config.sample_time_s / self.config.gear_ratio
+        self.right_motor_rotation += right_motor_rps * self.config.sample_time_s / self.config.gear_ratio
 
-        # self.get_logger().info(f"Left motor rotation: {self.left_motor_rotation:.2f}, Right motor rotation: {self.right_motor_rotation:.2f}")
-
+        self.get_logger().info(f"Left motor rotation: {self.left_motor_rotation:.2f}, Right motor rotation: {self.right_motor_rotation:.2f}")
         linear_mps, angular_radps = self.config.motor_rps_to_twist(left_motor_rps, right_motor_rps)
 
         msg = TwistWithCovarianceStamped()
