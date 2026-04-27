@@ -21,20 +21,18 @@ The estop flowgraph writes the current estop state into `/tmp/estop_value.txt` (
 ## To run the robot for the 2026 competition
 
 ### 1. Motor calibration
-- Make sure the power switch is on and the physical estop is unpressed.
-- In a new terminal: `odrivetool`
-- `odrv0` and `odrv1` should both connect. If not, check USB and (if needed) reboot the computer.
-- `odrv0.axis0.requested_state = AXIS_STATE_FULL_CALIBRATION_SEQUENCE`
-  - You should hear beeping. If the indicator light is red instead, run `odrv0.clear_errors()` first.
+1. Make sure the power switch is on and the physical estop is unpressed.
+2. Run 
+```
+python3 scripts/calibrate_odrive.py
+```
+  - You should hear beeping. If the indicator light is red instead, run the script again
   - Light flashes green during calibration, blue when done.
-- Repeat for `odrv1`.
-  - On the test stand you can calibrate both at once. On the ground, do them one at a time.
-- `quit()` to exit.
-- If an ODrive errors at runtime, run
+3. If an ODrive errors at runtime, run
 ```
 python3 scripts/clear_odrive_errors.py
 ```
-If errors persist, re-check power and the physical estop.
+4. If errors persist, re-check power and the physical estop.
 
 ### 2. Start the remote estop (as backup estop method)
 - Open [sdr_estop/estopnew.grc](sdr_estop/estopnew.grc) in GNU Radio Companion and run the flowgraph.
