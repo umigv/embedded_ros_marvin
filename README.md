@@ -5,16 +5,13 @@
 ├── embedded_ros_marvin/              # ROS 2 node implementations
 │   ├── odrive_two_motors.py          # /cmd_vel → ODrives; publishes /enc_vel/raw (TwistWithCovarianceStamped)
 │   ├── led_subscriber.py             # Drives safety-light LED based on estop / teleop / autonomy state
+│   ├── serial_estop_monitor.py       # Monitors remote estop state and write to /tmp/estop_value.txt
 │   └── recovery_executable.py        # /state-driven recovery; publishes /recovery_cmd_vel
 ├── launch/
-│   └── launch_embedded.py            # Launches dual_odrive_controller + LED_subscriber
-├── sdr_estop/
-│   ├── estopnew.grc                  # GNU Radio flowgraph for remote estop receiver
-│   ├── estop.py                      # Auto-generated Python from the flowgraph
-│   └── estop_epy_block_*.py          # Embedded Python blocks (integer toggle, etc.)
+│   └── embedded.launch.py            # Launches dual_odrive_controller + LED_subscriber + serial_estop_monitor
 ```
 
-The estop flowgraph writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
+The estop writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
 
 ---
 
@@ -32,25 +29,19 @@ The estop flowgraph writes the current estop state into `/tmp/estop_value.txt` (
 - `quit()` to exit.
 - If an ODrive errors at runtime, re-enter `odrivetool` and run `odrv0.clear_errors()` / `odrv1.clear_errors()`. If errors persist, re-check power and the physical estop.
 
-### 2. Start the remote estop (as backup estop method)
-- Open [sdr_estop/estopnew.grc](sdr_estop/estopnew.grc) in GNU Radio Companion and run the flowgraph.
-- Notes:
-  - Restarting the flowgraph resets the estop value to `1` (no estop).
-  - If the flowgraph is never started, the estop file may not exist — the embedded nodes treat that as **no estop** (robot enabled).
-
-### 3. Launch the embedded nodes
+### 2. Launch the embedded nodes
 Make sure `odrivetool` is closed first (it holds the USB connection).
 ```sh
-ros2 launch embedded_ros_marvin launch_embedded.py
+ros2 launch embedded_ros_marvin embedded.launch.py
 ```
 ODrive indicator lights should now flash green.
 
-### 4. Launch the recovery executable
-`recovery_executable` is **not** included in `launch_embedded.py` — start it in its own terminal when running autonomy:
+### 3. Launch the recovery executable
+`recovery_executable` is **not** included in `embedded.launch.py` — start it in its own terminal when running nav:
 ```sh
 ros2 run embedded_ros_marvin recovery_executable
 ```
-It waits on the `state/set_recovery` service, so bring up the autonomy stack first.
+It waits on the `state/set_recovery` service, so bring up nav stack first.
 
 ---
 
@@ -60,6 +51,7 @@ It waits on the `state/set_recovery` service, so bring up the autonomy stack fir
 - **Sub:** `cmd_vel` (`geometry_msgs/Twist`)
 - **Pub:** `enc_vel/raw` (`geometry_msgs/TwistWithCovarianceStamped`) — remapped from `enc_vel` in the launch file
 - Reads `/tmp/estop_value.txt`; commands zero velocity while estopped.
+
 
 ### `LED_subscriber` ([led_subscriber.py](embedded_ros_marvin/led_subscriber.py))
 
@@ -77,17 +69,6 @@ It waits on the `state/set_recovery` service, so bring up the autonomy stack fir
 - **Pub:** `recovery_cmd_vel` (`geometry_msgs/Twist`)
 - **Service client:** `state/set_recovery` (`std_srvs/SetBool`)
 
----
-
-## Launch parameters
-
-`launch_embedded.py`:
-- **`use_LED`** (default `true`) — set to `false` to skip the LED node, e.g. when the LED Arduino isn't connected.
-  ```sh
-  ros2 launch embedded_ros_marvin launch_embedded.py use_LED:=false
-  ```
-
----
 
 ## Wireless access point password
 `64182087`
