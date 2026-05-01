@@ -93,8 +93,8 @@ class CovarianceConfig:
             raise ValueError("CovarianceConfig: angular_variance_gain must be >= 0")
 
 @dataclass(frozen=True)
-class DualOdriveConfig:
-    """Configuration for the dual ODrive motor controller.
+class OdriveDriverConfig:
+    """Configuration for the ODrive motor driver node.
 
     Attributes:
         left_odrive: Hardware identification and polarity for the left ODrive unit.
@@ -112,15 +112,15 @@ class DualOdriveConfig:
     geometry: GeometryConfig
     covariance: CovarianceConfig
     sample_time_s: float = 0.01
-    timestamp_delay_s: float = 0.01
+    timestamp_delay_s: float = 0.0
     frame_id: str = "base_link"
     estop_file_path: Path = Path("/tmp/estop_value.txt")
 
     def __post_init__(self) -> None:
         if self.sample_time_s <= 0:
-            raise ValueError("DualOdriveConfig: sample_time_s must be > 0")
+            raise ValueError("OdriveDriverConfig: sample_time_s must be > 0")
         if self.timestamp_delay_s < 0:
-            raise ValueError("DualOdriveConfig: timestamp_delay_s must be >= 0")
+            raise ValueError("OdriveDriverConfig: timestamp_delay_s must be >= 0")
 
     def twist_covariance(self, linear_mps: float, angular_radps: float) -> list[float]:
         linear_variance_dynamic = self.covariance.linear_variance_gain * (linear_mps ** 2)
@@ -152,11 +152,11 @@ class DualOdriveConfig:
         right_motor_rps = right_wheel_mps * self.geometry.motor_rps_per_wheel_mps * self.right_odrive.polarity
         return left_motor_rps, right_motor_rps
 
-class DualODriveController(Node):
+class OdriveDriver(Node):
     def __init__(self):
-        super().__init__('dual_odrive_controller')
+        super().__init__('odrive_driver')
 
-        self.config = DualOdriveConfig(
+        self.config = OdriveDriverConfig(
             left_odrive=OdriveConfig(serial="395534753331"),
             right_odrive=OdriveConfig(serial="384934743539"),
             geometry=GeometryConfig(),
@@ -225,7 +225,7 @@ class DualODriveController(Node):
 
 def main() -> None:
     rclpy.init()
-    node = DualODriveController()
+    node = OdriveDriver()
     try:
         rclpy.spin(node)
     finally:

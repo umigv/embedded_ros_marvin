@@ -9,9 +9,9 @@ def generate_launch_description():
         output='screen',
     )
 
-    dual_odrive_controller_node = launch_ros.actions.Node(
-        package='embedded_ros_marvin', 
-        executable='dual_odrive_controller',
+    odrive_driver_node = launch_ros.actions.Node(
+        package='embedded_ros_marvin',
+        executable='odrive_driver',
         output='screen',
         remappings=[('enc_vel', 'enc_vel/raw')],
     )
@@ -24,7 +24,7 @@ def generate_launch_description():
     )
 
     return launch.LaunchDescription([
-        dual_odrive_controller_node,
+        odrive_driver_node,
         led_node,
         serial_estop_monitor_node,
     ])
