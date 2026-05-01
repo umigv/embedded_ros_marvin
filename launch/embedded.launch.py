@@ -5,7 +5,7 @@ import launch_ros.actions
 def generate_launch_description():
     led_node = launch_ros.actions.Node(
         package='embedded_ros_marvin', 
-        executable='LED_subscriber',
+        executable='led_driver',
         output='screen',
     )
 

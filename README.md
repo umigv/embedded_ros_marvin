@@ -55,7 +55,7 @@ It waits on the `state/set_recovery` service, so bring up nav stack first.
 - Reads `/tmp/estop_value.txt`; commands zero velocity while estopped.
 
 
-### `LED_subscriber` ([led_subscriber.py](embedded_ros_marvin/led_subscriber.py))
+### `led_driver` ([led_driver.py](embedded_ros_marvin/led_driver.py))
 
 | Priority | Source | Code |
 |---|---|---|
