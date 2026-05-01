@@ -2,10 +2,7 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import TwistWithCovarianceStamped, Twist
 import odrive
-from odrive.enums import (
-    AXIS_STATE_CLOSED_LOOP_CONTROL,
-    CONTROL_MODE_VELOCITY_CONTROL,
-)
+from odrive.enums import AxisState, ControlMode
 import math
 from dataclasses import dataclass
 
@@ -145,8 +142,8 @@ class DualODriveController(Node):
         self.publisher.publish(msg)
 
     def initialize_odrive(self, odrive) -> None:
-        odrive.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
-        odrive.axis0.controller.config.control_mode = CONTROL_MODE_VELOCITY_CONTROL
+        odrive.axis0.requested_state = AxisState.CLOSED_LOOP_CONTROL
+        odrive.axis0.controller.config.control_mode = ControlMode.VELOCITY_CONTROL
 
     def set_motor_rps(self, left_motor_rps: float, right_motor_rps: float) -> None:
         self.odrive_left.axis0.controller.input_vel = left_motor_rps * self.config.left_polarity
