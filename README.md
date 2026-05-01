@@ -4,11 +4,11 @@
 ```
 ├── embedded_ros_marvin/              # ROS 2 node implementations
 │   ├── odrive_two_motors.py          # /cmd_vel → ODrives; publishes /enc_vel/raw (TwistWithCovarianceStamped)
-│   ├── led_subscriber.py             # Drives safety-light LED based on estop / teleop / autonomy state
+│   ├── led_driver.py                 # Drives safety-light LED based on estop / teleop / autonomy state
 │   ├── serial_estop_monitor.py       # Monitors remote estop state and write to /tmp/estop_value.txt
 │   └── recovery_executable.py        # /state-driven recovery; publishes /recovery_cmd_vel
 ├── launch/
-│   └── embedded.launch.py            # Launches dual_odrive_controller + LED_subscriber + serial_estop_monitor
+│   └── embedded.launch.py            # Launches dual_odrive_controller + led_driver + serial_estop_monitor
 ```
 
 The estop writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
@@ -55,7 +55,7 @@ It waits on the `state/set_recovery` service, so bring up nav stack first.
 - Reads `/tmp/estop_value.txt`; commands zero velocity while estopped.
 
 
-### `LED_subscriber` ([led_subscriber.py](embedded_ros_marvin/led_subscriber.py))
+### `led_driver` ([led_driver.py](embedded_ros_marvin/led_driver.py))
 
 | Priority | Source | Code |
 |---|---|---|
