@@ -4,11 +4,11 @@
 ```
 ├── embedded_ros_marvin/              # ROS 2 node implementations
 │   ├── odrive_driver.py              # /cmd_vel → ODrives; publishes /enc_vel/raw (TwistWithCovarianceStamped)
-│   ├── led_subscriber.py             # Drives safety-light LED based on estop / teleop / autonomy state
-│   ├── serial_estop_monitor.py       # Monitors remote estop state and write to /tmp/estop_value.txt
+│   ├── led_driver.py                 # Drives safety-light LED based on estop / teleop / autonomy state
+│   ├── estop_driver.py               # Monitors remote estop state and writes to /tmp/estop_value.txt
 │   └── recovery_executable.py        # /state-driven recovery; publishes /recovery_cmd_vel
 ├── launch/
-│   └── embedded.launch.py            # Launches odrive_driver + LED_subscriber + serial_estop_monitor
+│   └── embedded.launch.py            # Launches odrive_driver + led_driver + estop_driver
 ```
 
 The estop writes the current estop state into `/tmp/estop_value.txt` (`"1"` = estopped). All embedded nodes read that file directly.
@@ -64,6 +64,10 @@ It waits on the `state/set_recovery` service, so bring up nav stack first.
 | 3 | `state` = `normal` | `2` |
 | 3 | `state` = `no_mans_land` | `3` |
 | 3 | `state` = `recovery` | `4` |
+
+
+### `estop_driver` ([estop_driver.py](embedded_ros_marvin/estop_driver.py))
+- Reads `"0"`/`"1"` lines from the `/dev/estop` serial device and atomically writes the latest value to `/tmp/estop_value.txt` for the other nodes to consume.
 
 
 ### `recovery_executable` ([recovery_executable.py](embedded_ros_marvin/recovery_executable.py))

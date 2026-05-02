@@ -25,9 +25,9 @@ setup(
     entry_points={
         'console_scripts': [
             "odrive_driver = embedded_ros_marvin.odrive_driver:main",
-            "LED_subscriber = embedded_ros_marvin.led_subscriber:main",
+            "led_driver = embedded_ros_marvin.led_driver:main",
             "recovery_executable = embedded_ros_marvin.recovery_executable:main",
-            "serial_estop_monitor = embedded_ros_marvin.serial_estop_monitor:run_estop_monitor",
+            "estop_driver = embedded_ros_marvin.estop_driver:main",
         ],
     },
 )

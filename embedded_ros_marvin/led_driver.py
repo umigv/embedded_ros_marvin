@@ -61,26 +61,26 @@ class LedDriver(Node):
         self.last_teleop_time: Time | None = None
         self.state: str | None = None
         self.last_sent: int | None = None
-        self.serial_port: serial.Serial | None = None
+        self.serial: serial.Serial | None = None
         
         try:
-            self.serial_port = serial.Serial(str(self.config.serial_port), baudrate=self.config.baud_rate, timeout=1)
+            self.serial = serial.Serial(str(self.config.serial_port), baudrate=self.config.baud_rate, timeout=1)
             self.get_logger().info(f"Connected to {self.config.serial_port}")
             self.wait_for_ready()
         except (serial.SerialException, RuntimeError) as e:
             self.get_logger().error(f"Failed to connect to {self.config.serial_port}: {e}")
             # We don't call rclpy.shutdown() here because it causes a deadlock in humble
             # https://github.com/ros2/rclpy/issues/1646
-            raise SystemExit(0)
+            raise SystemExit(1) from None
 
         self.create_timer(self.config.update_period_s, self.update)
 
     def wait_for_ready(self) -> None:
-        assert self.serial_port is not None
+        assert self.serial is not None
 
         deadline = time.monotonic() + self.config.ready_timeout_s
         while time.monotonic() < deadline:
-            line = self.serial_port.readline().decode(errors="ignore").strip()
+            line = self.serial.readline().decode(errors="ignore").strip()
             if line == "READY":
                 self.get_logger().info("READY received")
                 return
@@ -120,24 +120,24 @@ class LedDriver(Node):
         self.send_led_value(value)
 
     def send_led_value(self, value: int):
-        assert self.serial_port is not None
+        assert self.serial is not None
 
-        if not self.serial_port.is_open:
+        if not self.serial.is_open:
             return
 
         if value == self.last_sent:
             return
 
         try:
-            self.serial_port.write(f"{value}\n".encode())
+            self.serial.write(f"{value}\n".encode())
             self.get_logger().info(f"Sent: {value}")
             self.last_sent = value
         except serial.SerialException as e:
             self.get_logger().error(f"Serial communication error: {e}")
 
     def destroy_node(self):
-        if self.serial_port is not None and self.serial_port.is_open:
-            self.serial_port.close()
+        if self.serial is not None and self.serial.is_open:
+            self.serial.close()
         super().destroy_node()
 
 
