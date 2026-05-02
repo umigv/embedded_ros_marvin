@@ -17,14 +17,14 @@ def generate_launch_description():
     )
 
 
-    serial_estop_monitor_node = launch_ros.actions.Node(
+    estop_driver_node = launch_ros.actions.Node(
         package='embedded_ros_marvin',
-        executable='serial_estop_monitor',
+        executable='estop_driver',
         output='screen',
     )
 
     return launch.LaunchDescription([
         odrive_driver_node,
         led_node,
-        serial_estop_monitor_node,
+        estop_driver_node,
     ])
