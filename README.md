@@ -1,5 +1,8 @@
 # embedded_ros_marvin
 
+> [!WARNING]
+> This repo is now archived. All new development moves to the [maverick monorepo](https://github.com/umigv/maverick)
+
 ## Project structure
 ```
 ├── embedded_ros_marvin/              # ROS 2 node implementations
